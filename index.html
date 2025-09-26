@@ -2,90 +2,377 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Slideshow</title>
-  <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TOEIC (500–600) – Set 1 | Boo‑riculum</title>
   <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      background: #f2f2f2;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .swiper {
-      width: 95%;
-      max-width: 900px;
-      height: 90vh;
-    }
-    .swiper-slide img {
-      width: 100%;
-      height: auto;
-      object-fit: contain;
-    }
+    :root{--bg:#0b0f14;--card:#121821;--ink:#e6edf3;--muted:#9fb1c6;--accent:#6fd3ff;--accent2:#aef35a;--wrong:#ff6b6b;--right:#3ddc97;--btn:#1f2a38}
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif;background:linear-gradient(180deg,#0b0f14,#0e141d 30%,#0b0f14);color:var(--ink)}
+    .wrap{max-width:980px;margin:32px auto;padding:16px}
+    .title{font-size:clamp(22px,3vw,32px);font-weight:800;letter-spacing:.3px;margin:0 0 8px}
+    .sub{color:var(--muted);margin:0 0 24px}
+    .bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+    .tab{background:var(--btn);color:var(--ink);border:1px solid #263243;padding:8px 12px;border-radius:12px;cursor:pointer;user-select:none}
+    .tab.active{outline:2px solid var(--accent)}
+    .card{background:var(--card);border:1px solid #1e2733;border-radius:16px;padding:16px;box-shadow:0 8px 30px rgba(0,0,0,.22)}
+    .row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .controls{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{background:var(--btn);border:1px solid #273443;color:var(--ink);padding:10px 14px;border-radius:12px;cursor:pointer}
+    .btn[disabled]{opacity:.45;cursor:not-allowed}
+    .ghost{opacity:.7;color:var(--muted)}
+    .big{font-size:clamp(18px,2.2vw,22px);font-weight:700}
+    .small{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:14px}
+    .chip{border:1px solid #2a394d;border-radius:12px;padding:10px 12px}
+    .qa{margin:10px 0}
+    .opt{display:block;width:100%;text-align:left;margin:8px 0;padding:10px 12px;border-radius:12px;border:1px solid #2a394d;background:#141b26;cursor:pointer}
+    .opt.wrong{background:#2a1416;border-color:#5a1e24;color:#ffb6b6}
+    .opt.right{background:#13291f;border-color:#1f5a3c;color:#c9ffe6}
+    .flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .progress{height:10px;background:#0f141d;border:1px solid #1e2733;border-radius:999px;overflow:hidden}
+    .progress>div{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%}
+    .kbd{font-family:ui-monospace,Consolas,Menlo,monospace;background:#0e141d;border:1px solid #263243;border-radius:8px;padding:2px 6px;color:#b7c7d8}
+    .note{font-size:13px;color:#8aa2b7}
   </style>
 </head>
 <body>
-
-  <div class="swiper">
-    <div class="swiper-wrapper">
-      <div class="swiper-slide"><img src="01.jpg" alt="01"></div>
-      <div class="swiper-slide"><img src="02.jpg" alt="02"></div>
-      <div class="swiper-slide"><img src="03.jpg" alt="03"></div>
-      <div class="swiper-slide"><img src="04.jpg" alt="04"></div>
-      <div class="swiper-slide"><img src="05.jpg" alt="05"></div>
-      <div class="swiper-slide"><img src="06.jpg" alt="06"></div>
-      <div class="swiper-slide"><img src="07.jpg" alt="07"></div>
-      <div class="swiper-slide"><img src="08.jpg" alt="08"></div>
-      <div class="swiper-slide"><img src="09.jpg" alt="09"></div>
-      <div class="swiper-slide"><img src="10.jpg" alt="10"></div>
-      <div class="swiper-slide"><img src="11.jpg" alt="11"></div>
-      <div class="swiper-slide"><img src="12.jpg" alt="12"></div>
-      <div class="swiper-slide"><img src="13.jpg" alt="13"></div>
-      <div class="swiper-slide"><img src="14.jpg" alt="14"></div>
-      <div class="swiper-slide"><img src="15.jpg" alt="15"></div>
-      <div class="swiper-slide"><img src="16.jpg" alt="16"></div>
-      <div class="swiper-slide"><img src="17.jpg" alt="17"></div>
-      <div class="swiper-slide"><img src="18.jpg" alt="18"></div>
-      <div class="swiper-slide"><img src="19.jpg" alt="19"></div>
-      <div class="swiper-slide"><img src="20.jpg" alt="20"></div>
-      <div class="swiper-slide"><img src="21.jpg" alt="21"></div>
-      <div class="swiper-slide"><img src="22.jpg" alt="22"></div>
-      <div class="swiper-slide"><img src="23.jpg" alt="23"></div>
-      <div class="swiper-slide"><img src="24.jpg" alt="24"></div>
-      <div class="swiper-slide"><img src="25.jpg" alt="25"></div>
-      <div class="swiper-slide"><img src="26.jpg" alt="26"></div>
-      <div class="swiper-slide"><img src="27.jpg" alt="27"></div>
-      <div class="swiper-slide"><img src="28.jpg" alt="28"></div>
-      <div class="swiper-slide"><img src="29.jpg" alt="29"></div>
-      <div class="swiper-slide"><img src="30.jpg" alt="30"></div>
-      <div class="swiper-slide"><img src="31.jpg" alt="31"></div>
-      <div class="swiper-slide"><img src="32.jpg" alt="32"></div>
-      <div class="swiper-slide"><img src="33.jpg" alt="33"></div>
-    </div>
-
-    <div class="swiper-button-next"></div>
-    <div class="swiper-button-prev"></div>
-    <div class="swiper-pagination"></div>
+  <div class="wrap">
+    <h1 class="title">TOEIC (500–600) – Set 1</h1>
+    <p class="sub">Modes: Vocab J→E / Vocab E→J / Sentences / Q&A / Quiz. 
+      Wrong quiz answers stay <span style="color:var(--wrong);font-weight:700">red</span>; you must choose the correct answer (<span style="color:var(--right);font-weight:700">green</span>) before moving on.
+    </p>
+    <div class="bar" id="modeBar"></div>
+    <div class="card" id="stage"></div>
   </div>
 
-  <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
   <script>
-    const swiper = new Swiper('.swiper', {
-      loop: false,
-      navigation: {
-        nextEl: '.swiper-button-next',
-        prevEl: '.swiper-button-prev',
-      },
-      pagination: {
-        el: '.swiper-pagination',
-        clickable: true,
-      },
-      grabCursor: true,
-    });
-  </script>
+    // -------------------- DATA (500–600) SET 1 --------------------
+    const vocab = [
+      {en:"accomplish", jp:"達成する"},
+      {en:"allocate", jp:"割り当てる"},
+      {en:"approximately", jp:"およそ／約"},
+      {en:"assemble", jp:"組み立てる；集める"},
+      {en:"assume", jp:"仮定する；引き受ける"},
+      {en:"authorize", jp:"承認する；認可する"},
+      {en:"capacity", jp:"能力；収容能力"},
+      {en:"cautious", jp:"用心深い；慎重な"},
+      {en:"clarify", jp:"明確にする"},
+      {en:"collaborate", jp:"協力する；共同で行う"},
+      {en:"compile", jp:"まとめる；編集する"},
+      {en:"confirm", jp:"確認する"},
+      {en:"conserve", jp:"節約する；保存する"},
+      {en:"consistent", jp:"一貫した；矛盾のない"},
+      {en:"decline", jp:"断る；減少する"},
+      {en:"encourage", jp:"励ます；促す"},
+      {en:"evaluate", jp:"評価する"},
+      {en:"implement", jp:"実行する；実施する"},
+      {en:"maintain", jp:"維持する；主張する"},
+      {en:"suspend", jp:"一時停止する；保留にする"}
+    ];
 
+    const sentences = [
+      {en:"We need to allocate more time to training.", jp:"研修にもっと時間を割り当てる必要があります。"},
+      {en:"The parts are easy to assemble with the manual.", jp:"その部品は取扱説明書で簡単に組み立てられます。"},
+      {en:"Please confirm your attendance by Friday.", jp:"金曜日までに出欠をご確認ください。"},
+      {en:"Sales declined slightly last quarter.", jp:"先四半期に売上はわずかに減少しました。"},
+      {en:"Her explanation clarified the policy.", jp:"彼女の説明で方針が明確になりました。"},
+      {en:"The company authorized the refund.", jp:"会社は返金を承認しました。"},
+      {en:"Our factory operates at full capacity in summer.", jp:"当工場は夏に最大稼働しています。"},
+      {en:"Be cautious when signing the contract.", jp:"契約に署名する際は慎重になってください。"},
+      {en:"We will collaborate with a local supplier.", jp:"地元のサプライヤーと協力します。"},
+      {en:"The report compiles data from three surveys.", jp:"その報告書は3つの調査からのデータをまとめています。"},
+      {en:"They implemented a new security system.", jp:"彼らは新しいセキュリティシステムを実施しました。"},
+      {en:"Please conserve energy after hours.", jp:"営業時間外はエネルギーを節約してください。"},
+      {en:"We evaluate projects every quarter.", jp:"我々は四半期ごとにプロジェクトを評価します。"},
+      {en:"The machine requires regular maintenance.", jp:"その機械には定期的な保守が必要です。"},
+      {en:"He assumed the role of team leader.", jp:"彼はチームリーダーの役割を引き受けました。"},
+      {en:"Results remain consistent across tests.", jp:"結果はテスト全体で一貫しています。"},
+      {en:"The event was suspended due to the weather.", jp:"天候のためイベントは一時中止になりました。"},
+      {en:"Encourage customers to leave feedback.", jp:"顧客にフィードバックの記入を促してください。"},
+      {en:"We accomplished our yearly targets.", jp:"年間目標を達成しました。"},
+      {en:"The estimate is approximately ten percent lower.", jp:"見積もりはおよそ10%低くなっています。"}
+    ];
+
+    const qa = [
+      {q:"What does 'allocate' mean in project management?", a:"To assign resources, time, or money to tasks.", jp:"プロジェクト管理での『allocate』は、資源・時間・資金をタスクに割り当てること。"},
+      {q:"When should you confirm a meeting?", a:"After the date/time is set and before the day of the meeting.", jp:"日時が決まった後で、当日より前に確認する。"},
+      {q:"Why conserve energy at the office?", a:"To reduce costs and environmental impact.", jp:"コストと環境負荷を減らすため。"},
+      {q:"What is consistent performance?", a:"Results that are stable and reliable over time.", jp:"時間が経っても安定・信頼できる成果。"},
+      {q:"How do teams collaborate online?", a:"Using shared tools like chat, docs, and task boards.", jp:"チャット、ドキュメント、タスクボードなどの共有ツールを使う。"},
+      {q:"What does it mean to implement a plan?", a:"To execute it in practice.", jp:"実際に実行すること。"},
+      {q:"When might a company suspend operations?", a:"During emergencies or system maintenance.", jp:"緊急時やシステム保守の間。"},
+      {q:"How do you evaluate a vendor?", a:"By price, quality, reliability, and service.", jp:"価格・品質・信頼性・サービスで評価する。"},
+      {q:"What does 'assume responsibility' imply?", a:"You accept the duty and its consequences.", jp:"責任とその結果を引き受けること。"},
+      {q:"What is the capacity of a venue?", a:"The maximum number of people it can hold.", jp:"収容可能な最大人数。"},
+      {q:"Why clarify instructions?", a:"To prevent mistakes and delays.", jp:"ミスと遅延を防ぐため。"},
+      {q:"How can managers encourage staff?", a:"By recognizing efforts and offering support.", jp:"努力を認め、支援を提供する。"},
+      {q:"What does 'compile a report' involve?", a:"Collecting and organizing information.", jp:"情報を収集し整理すること。"},
+      {q:"When do sales typically decline?", a:"During off-peak seasons or recessions.", jp:"閑散期や不況のとき。"},
+      {q:"What is approximately ten minutes?", a:"About eight to twelve minutes.", jp:"8〜12分程度。"},
+      {q:"Why be cautious with emails?", a:"To avoid scams and data leaks.", jp:"詐欺や情報漏えいを避けるため。"},
+      {q:"How do you maintain equipment?", a:"Clean, inspect, and service it regularly.", jp:"定期的に清掃・点検・整備する。"},
+      {q:"Who can authorize expenses?", a:"Supervisors or finance departments.", jp:"上長や経理部門。"},
+      {q:"What does 'accomplish a task' mean?", a:"Finish it successfully.", jp:"うまくやり遂げること。"},
+      {q:"What happens when teams fail to collaborate?", a:"Work is duplicated and deadlines are missed.", jp:"作業の重複や締切遅延が起きる。"}
+    ];
+
+    const quiz = [
+      {q:"'Allocate' is closest in meaning to:", options:["distribute","repair","delay","dismiss"], answer:0},
+      {q:"'Approximately' means:", options:["exactly","about","rarely","equally"], answer:1},
+      {q:"To 'assemble' equipment is to:", options:["store it","build it","ship it","return it"], answer:1},
+      {q:"'Authorize' most nearly means:", options:["approve","argue","announce","avoid"], answer:0},
+      {q:"'Capacity' refers to:", options:["cost of labor","maximum ability","average time","customer review"], answer:1},
+      {q:"A 'cautious' approach is:", options:["careless","patient","careful","creative"], answer:2},
+      {q:"To 'clarify' instructions is to:", options:["shorten them","make them clear","ignore them","translate them"], answer:1},
+      {q:"Teams 'collaborate' when they:", options:["compete","work together","rotate jobs","work overtime"], answer:1},
+      {q:"To 'compile' data means to:", options:["delete it","compare it","collect it","share it"], answer:2},
+      {q:"To 'confirm' an order is to:", options:["cancel it","verify it","ship it","print it"], answer:1},
+      {q:"To 'conserve' resources is to:", options:["save them","spend them","waste them","audit them"], answer:0},
+      {q:"'Consistent' results are:", options:["irregular","similar over time","unexpected","declining"], answer:1},
+      {q:"To 'decline' an invitation is to:", options:["accept","postpone","refuse","repeat"], answer:2},
+      {q:"To 'encourage' staff is to:", options:["criticize","motivate","replace","observe"], answer:1},
+      {q:"To 'evaluate' a program is to:", options:["guess","measure","announce","install"], answer:1},
+      {q:"To 'implement' a policy is to:", options:["plan it","discuss it","enforce it","oppose it"], answer:2},
+      {q:"To 'maintain' equipment is to:", options:["ignore","repair regularly","sell","relocate"], answer:1},
+      {q:"To 'assume' a role is to:", options:["reject it","take it on","criticize it","limit it"], answer:1},
+      {q:"To 'suspend' service is to:", options:["reduce cost","improve quality","pause temporarily","expand rapidly"], answer:2},
+      {q:"To 'accomplish' a goal is to:", options:["begin it","delay it","achieve it","question it"], answer:2}
+    ];
+
+    // -------------------- APP SHELL --------------------
+    const MODES = [
+      { id:"vocab-j2e", label:"Vocab J→E" },
+      { id:"vocab-e2j", label:"Vocab E→J" },
+      { id:"sentences", label:"Sentences" },
+      { id:"qa", label:"Q&A" },
+      { id:"quiz", label:"Quiz" }
+    ];
+
+    const stage = document.getElementById('stage');
+    const bar = document.getElementById('modeBar');
+
+    let state = {
+      mode: MODES[0].id,
+      i: 0,
+      quizIndex: 0,
+      showJP: true,
+    };
+
+    function saveHash(){
+      location.hash = `${state.mode}:${state.i}`;
+    }
+    function loadHash(){
+      const h = location.hash.replace('#','');
+      const [m, idx] = h.split(':');
+      if(MODES.some(x=>x.id===m)) state.mode = m;
+      state.i = Number(idx||0)||0;
+    }
+
+    function renderBar(){
+      bar.innerHTML = '';
+      MODES.forEach(m=>{
+        const b = document.createElement('button');
+        b.className = 'tab' + (state.mode===m.id?' active':'');
+        b.textContent = m.label;
+        b.onclick = ()=>{ state.mode = m.id; state.i = 0; state.quizIndex = 0; saveHash(); render(); };
+        bar.appendChild(b);
+      });
+    }
+
+    function navControls(total){
+      const el = document.createElement('div');
+      el.className = 'row';
+      el.innerHTML = `
+        <div class="flex">
+          <button class="btn" id="prevBtn">◀ Prev</button>
+          <button class="btn" id="nextBtn">Next ▶</button>
+          <button class="btn" id="randBtn">Shuffle</button>
+          <label class="btn" style="display:flex;gap:8px;align-items:center">
+            <input type="checkbox" id="jpToggle" ${state.showJP? 'checked':''}/> 日本語
+          </label>
+        </div>
+        <div class="flex" style="min-width:220px;justify-content:flex-end">
+          <div class="progress" style="width:200px"><div style="width:${((state.i+1)/total)*100}%"></div></div>
+          <span class="small">${state.i+1} / ${total}</span>
+        </div>`;
+      el.querySelector('#prevBtn').onclick = ()=>{ state.i = Math.max(0, state.i-1); saveHash(); render(); };
+      el.querySelector('#nextBtn').onclick = ()=>{ state.i = Math.min(total-1, state.i+1); saveHash(); render(); };
+      el.querySelector('#randBtn').onclick = ()=>{ state.i = Math.floor(Math.random()*total); saveHash(); render(); };
+      el.querySelector('#jpToggle').onchange = (e)=>{ state.showJP = e.target.checked; render(); };
+      return el;
+    }
+
+    function renderVocabJ2E(){
+      const total = vocab.length;
+      const v = vocab[state.i];
+      stage.innerHTML = '';
+      stage.appendChild(navControls(total));
+      const box = document.createElement('div');
+      box.className = 'grid';
+      box.innerHTML = `
+        <div class="chip">
+          <div class="small ghost">日本語 → 英語</div>
+          <div class="big">${state.showJP? v.jp : '•••'}</div>
+          <div class="small">Answer:</div>
+          <div class="big" style="color:var(--accent)">${v.en}</div>
+        </div>`;
+      stage.appendChild(box);
+    }
+
+    function renderVocabE2J(){
+      const total = vocab.length;
+      const v = vocab[state.i];
+      stage.innerHTML='';
+      stage.appendChild(navControls(total));
+      const box = document.createElement('div');
+      box.className='grid';
+      box.innerHTML = `
+        <div class="chip">
+          <div class="small ghost">英語 → 日本語</div>
+          <div class="big">${v.en}</div>
+          <div class="small">答え：</div>
+          <div class="big" style="color:var(--accent)">${state.showJP? v.jp : '•••'}</div>
+        </div>`;
+      stage.appendChild(box);
+    }
+
+    function renderSentences(){
+      const total = sentences.length;
+      const s = sentences[state.i];
+      stage.innerHTML='';
+      stage.appendChild(navControls(total));
+      const card = document.createElement('div');
+      card.className='chip';
+      card.innerHTML = `
+        <div class="small ghost">Sentence</div>
+        <div class="big">${s.en}</div>
+        <div class="qa small" style="margin-top:8px">${state.showJP? s.jp : ''}</div>`;
+      stage.appendChild(card);
+    }
+
+    function renderQA(){
+      const total = qa.length;
+      const item = qa[state.i];
+      stage.innerHTML='';
+      stage.appendChild(navControls(total));
+      const card = document.createElement('div');
+      card.className='chip';
+      card.innerHTML = `
+        <div class="small ghost">Q&A</div>
+        <div class="big" style="margin-bottom:6px">Q. ${item.q}</div>
+        <div class="qa"><span class="small">A.</span> ${item.a}</div>
+        <div class="qa small">${state.showJP? item.jp : ''}</div>`;
+      stage.appendChild(card);
+    }
+
+    function renderQuiz(){
+      const idx = state.quizIndex;
+      const total = quiz.length;
+      const q = quiz[idx];
+      stage.innerHTML = '';
+
+      // Header + progress
+      const head = document.createElement('div');
+      head.className='row';
+      head.innerHTML = `
+        <div class="flex">
+          <button class="btn" id="restart">Restart</button>
+          <span class="note">Wrong answers stay red. Choose the correct answer to continue.</span>
+        </div>
+        <div class="flex" style="min-width:220px;justify-content:flex-end">
+          <div class="progress" style="width:200px"><div style="width:${((idx)/total)*100}%"></div></div>
+          <span class="small">${idx} / ${total}</span>
+        </div>`;
+      head.querySelector('#restart').onclick = ()=>{ state.quizIndex = 0; renderQuiz(); };
+      stage.appendChild(head);
+
+      // Question card
+      const box = document.createElement('div');
+      box.className='chip';
+      const title = document.createElement('div');
+      title.className='big';
+      title.textContent = q.q;
+      box.appendChild(title);
+
+      // Options with behavior: keep wrong red; only allow Next after correct
+      const optsWrap = document.createElement('div');
+      let solved = false;
+      q.options.forEach((t,i)=>{
+        const b = document.createElement('button');
+        b.className='opt';
+        b.textContent = `${String.fromCharCode(65+i)}. ${t}`;
+        b.onclick = ()=>{
+          if(solved) return; // ignore after solve
+          if(i===q.answer){
+            b.classList.add('right');
+            solved = true;
+            nextBtn.disabled = false;
+            progressNow();
+          } else {
+            b.classList.add('wrong');
+            b.disabled = true; // keep it red and disabled
+          }
+        };
+        optsWrap.appendChild(b);
+      });
+      box.appendChild(optsWrap);
+
+      // Footer controls
+      const foot = document.createElement('div');
+      foot.className='row';
+      const left = document.createElement('div');
+      left.className='flex';
+      const right = document.createElement('div');
+      right.className='flex';
+      const nextBtn = document.createElement('button');
+      nextBtn.className='btn';
+      nextBtn.textContent = idx === total-1 ? 'Finish' : 'Next ▶';
+      nextBtn.disabled = true; // locked until correct
+      nextBtn.onclick = ()=>{
+        if(idx < total-1){ state.quizIndex++; renderQuiz(); }
+        else { renderQuizSummary(); }
+      };
+      right.appendChild(nextBtn);
+      foot.appendChild(left); foot.appendChild(right);
+
+      stage.appendChild(box);
+      stage.appendChild(foot);
+
+      function progressNow(){
+        // (Optional) mini effect; no external libs
+        box.style.outline = '2px solid var(--right)';
+        setTimeout(()=> box.style.outline = 'none', 300);
+      }
+    }
+
+    function renderQuizSummary(){
+      stage.innerHTML='';
+      const done = document.createElement('div');
+      done.className='chip';
+      done.innerHTML = `
+        <div class="big">Great job! 🎉</div>
+        <div class="small">You finished all ${quiz.length} questions.</div>
+        <div class="flex" style="margin-top:10px">
+          <button class="btn" id="again">Restart Quiz</button>
+          <button class="btn" id="back">Back to Vocab</button>
+        </div>`;
+      stage.appendChild(done);
+      done.querySelector('#again').onclick = ()=>{ state.quizIndex=0; renderQuiz(); };
+      done.querySelector('#back').onclick = ()=>{ state.mode='vocab-j2e'; state.i=0; saveHash(); render(); };
+    }
+
+    function render(){
+      renderBar();
+      if(state.mode==='vocab-j2e') return renderVocabJ2E();
+      if(state.mode==='vocab-e2j') return renderVocabE2J();
+      if(state.mode==='sentences') return renderSentences();
+      if(state.mode==='qa') return renderQA();
+      if(state.mode==='quiz') return renderQuiz();
+    }
+
+    // Init
+    loadHash();
+    render();
+    window.addEventListener('hashchange', ()=>{ loadHash(); render(); });
+  </script>
 </body>
 </html>
