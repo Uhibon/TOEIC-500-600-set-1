@@ -1,378 +1,436 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TOEIC (500–600) – Set 1 | Boo‑riculum</title>
+  <title>TOEIC (500-600) set-1 – Boo-riculum</title>
+  <link rel="icon" type="image/png" href="booha-ghost.png">
   <style>
-    :root{--bg:#0b0f14;--card:#121821;--ink:#e6edf3;--muted:#9fb1c6;--accent:#6fd3ff;--accent2:#aef35a;--wrong:#ff6b6b;--right:#3ddc97;--btn:#1f2a38}
-    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif;background:linear-gradient(180deg,#0b0f14,#0e141d 30%,#0b0f14);color:var(--ink)}
-    .wrap{max-width:980px;margin:32px auto;padding:16px}
-    .title{font-size:clamp(22px,3vw,32px);font-weight:800;letter-spacing:.3px;margin:0 0 8px}
-    .sub{color:var(--muted);margin:0 0 24px}
-    .bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
-    .tab{background:var(--btn);color:var(--ink);border:1px solid #263243;padding:8px 12px;border-radius:12px;cursor:pointer;user-select:none}
-    .tab.active{outline:2px solid var(--accent)}
-    .card{background:var(--card);border:1px solid #1e2733;border-radius:16px;padding:16px;box-shadow:0 8px 30px rgba(0,0,0,.22)}
-    .row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-    .controls{display:flex;gap:8px;flex-wrap:wrap}
-    .btn{background:var(--btn);border:1px solid #273443;color:var(--ink);padding:10px 14px;border-radius:12px;cursor:pointer}
-    .btn[disabled]{opacity:.45;cursor:not-allowed}
-    .ghost{opacity:.7;color:var(--muted)}
-    .big{font-size:clamp(18px,2.2vw,22px);font-weight:700}
-    .small{color:var(--muted)}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:14px}
-    .chip{border:1px solid #2a394d;border-radius:12px;padding:10px 12px}
-    .qa{margin:10px 0}
-    .opt{display:block;width:100%;text-align:left;margin:8px 0;padding:10px 12px;border-radius:12px;border:1px solid #2a394d;background:#141b26;cursor:pointer}
-    .opt.wrong{background:#2a1416;border-color:#5a1e24;color:#ffb6b6}
-    .opt.right{background:#13291f;border-color:#1f5a3c;color:#c9ffe6}
-    .flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .progress{height:10px;background:#0f141d;border:1px solid #1e2733;border-radius:999px;overflow:hidden}
-    .progress>div{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%}
-    .kbd{font-family:ui-monospace,Consolas,Menlo,monospace;background:#0e141d;border:1px solid #263243;border-radius:8px;padding:2px 6px;color:#b7c7d8}
-    .note{font-size:13px;color:#8aa2b7}
+    :root { --ink:#222; --muted:#444; --accent:#0b78ff; --ok:#22c55e; --bad:#ef4444; }
+    html,body{height:100%;}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif;
+      color:var(--ink);
+      background:url('Booha card.jpg') center/cover fixed no-repeat;
+    }
+    .wrap{max-width:900px;margin:0 auto;padding:16px 16px 24px;}
+    header{
+      display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;
+      margin-bottom:12px;background:rgba(255,255,255,0.88);padding:12px 16px;
+      border-radius:16px;box-shadow:0 4px 10px rgba(0,0,0,0.15)
+    }
+    header h1{
+      font-size:18px;margin:0;font-weight:800;letter-spacing:.3px;
+      background:linear-gradient(90deg,#7dd3fc,#60a5fa,#a78bfa,#f472b6);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      display:flex;align-items:center;gap:8px
+    }
+    header h1 img{height:28px;width:auto;}
+    .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+    select,button{
+      background:rgba(255,255,255,0.95);color:var(--ink);border:1px solid #ccc;
+      border-radius:12px;padding:10px 12px;font-size:14px;
+      box-shadow:0 2px 5px rgba(0,0,0,0.08)
+    }
+    button{cursor:pointer;transition:transform .05s ease, background .2s}
+    button:hover{background:#f0f0f0}
+    button:active{transform:scale(.98)}
+    .pill{border:1px solid #ccc;border-radius:999px;padding:6px 10px;font-size:12px;background:rgba(255,255,255,0.7)}
+    .card{
+      user-select:none;-webkit-user-select:none;display:flex;flex-direction:column;justify-content:center;align-items:center;
+      text-align:center;background:url('Booha card.jpg') center/cover no-repeat;
+      border:1px solid #ccc;border-radius:24px;min-height:56vh;margin:16px auto;padding:22px 18px 28px;
+      box-shadow:0 10px 40px rgba(0,0,0,.25); position:relative;
+    }
+    .brand{
+      position:absolute;top:10px;left:12px;display:flex;gap:8px;align-items:center;
+      background:rgba(255,255,255,0.85);padding:6px 10px;border-radius:12px;border:1px solid #ddd;
+      box-shadow:0 2px 6px rgba(0,0,0,0.08); font-weight:800; letter-spacing:.2px;
+    }
+    .brand img{height:20px;width:auto}
+    .brand span{background:linear-gradient(90deg,#7dd3fc,#60a5fa,#a78bfa,#f472b6);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .label{color:var(--muted);font-size:13px;letter-spacing:.3px;margin-bottom:8px;
+      background:rgba(255,255,255,0.7);padding:4px 8px;border-radius:8px}
+    .main{font-size:28px;line-height:1.25;font-weight:800;margin:8px 0 10px;
+      background:rgba(255,255,255,0.86);padding:8px 12px;border-radius:12px}
+    .sub{font-size:18px;opacity:.92;margin:0 0 6px;background:rgba(255,255,255,0.65);
+      padding:4px 10px;border-radius:8px}
+    .hira{font-size:18px;color:var(--accent);opacity:.95;background:rgba(255,255,255,0.75);
+      padding:4px 10px;border-radius:8px}
+    .muted{color:var(--muted)}
+    .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+    .footer{
+      display:flex;align-items:center;justify-content:space-between;margin-top:8px;color:var(--muted);font-size:13px;
+      background:rgba(255,255,255,0.85);padding:8px 12px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1)
+    }
+    .progress{height:8px;border-radius:999px;background:#eee;overflow:hidden}
+    .progress>span{display:block;height:100%;background:linear-gradient(90deg,#7dd3fc,#60a5fa,#a78bfa,#f472b6);width:0%}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+    @media (max-width:700px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));} .main{font-size:24px}}
+    a{color:#0b78ff;text-decoration:none}
+    .hidden{display:none}
+    .options{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+    .optbtn{border:1px solid #ccc;border-radius:12px;padding:10px 14px;background:rgba(255,255,255,0.95);cursor:pointer}
+    .optbtn.ok{background:#dcfce7;border-color:#86efac;color:#166534}
+    .optbtn.bad{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
+    .small{font-size:15px; line-height:1.45;}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1 class="title">TOEIC (500–600) – Set 1</h1>
-    <p class="sub">Modes: Vocab J→E / Vocab E→J / Sentences / Q&A / Quiz. 
-      Wrong quiz answers stay <span style="color:var(--wrong);font-weight:700">red</span>; you must choose the correct answer (<span style="color:var(--right);font-weight:700">green</span>) before moving on.
-    </p>
-    <div class="bar" id="modeBar"></div>
-    <div class="card" id="stage"></div>
+    <header>
+      <h1><img src="booha-ghost.png" alt="Booha ghost"> Boo-riculum – TOEIC (500-600) set-1</h1>
+      <div class="controls">
+        <select id="mode" aria-label="Mode">
+          <option value="vocab-j2e">Vocab: 🇯🇵 → 🇺🇸</option>
+          <option value="vocab-e2j">Vocab: 🇺🇸 → 🇯🇵</option>
+          <option value="sentences">Sentences (practice)</option>
+          <option value="qa">Questions (practice)</option>
+          <option value="quiz">Quiz (multiple choice)</option>
+          <option value="reading">Reading</option>
+        </select>
+      </div>
+    </header>
+
+    <div id="card" class="card" role="button" aria-label="flashcard" tabindex="0">
+      <div class="brand"><img src="booha-ghost.png" alt="Booha ghost"><span>Boo-riculum</span></div>
+      <div id="label" class="label">Front</div>
+      <div id="main" class="main">—</div>
+      <div id="sub" class="sub muted">Tap or press Space to flip</div>
+      <div id="hira" class="hira hidden"></div>
+      <div id="mcArea" class="options hidden"></div>
+    </div>
+
+    <div class="footer">
+      <div class="row">
+        <span class="pill" title="Left / Right keys">Keyboard: ← →</span>
+        <span class="pill" title="Space to flip">Space = Flip</span>
+        <button id="btnPrev" title="← or swipe right">◀︎ Prev</button>
+        <button id="btnFlip" title="Tap / Space">Flip</button>
+        <button id="btnNext" title="→ or swipe left">Next ▶︎</button>
+        <button id="btnShuffle" title="Shuffle deck">Shuffle</button>
+      </div>
+      <div style="min-width:180px;text-align:right">
+        <div id="counter" class="muted">0 / 0</div>
+        <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+      </div>
+    </div>
   </div>
 
   <script>
-    // -------------------- DATA (500–600) SET 1 --------------------
-    const vocab = [
-      {en:"accomplish", jp:"達成する"},
-      {en:"allocate", jp:"割り当てる"},
-      {en:"approximately", jp:"およそ／約"},
-      {en:"assemble", jp:"組み立てる；集める"},
-      {en:"assume", jp:"仮定する；引き受ける"},
-      {en:"authorize", jp:"承認する；認可する"},
-      {en:"capacity", jp:"能力；収容能力"},
-      {en:"cautious", jp:"用心深い；慎重な"},
-      {en:"clarify", jp:"明確にする"},
-      {en:"collaborate", jp:"協力する；共同で行う"},
-      {en:"compile", jp:"まとめる；編集する"},
-      {en:"confirm", jp:"確認する"},
-      {en:"conserve", jp:"節約する；保存する"},
-      {en:"consistent", jp:"一貫した；矛盾のない"},
-      {en:"decline", jp:"断る；減少する"},
-      {en:"encourage", jp:"励ます；促す"},
-      {en:"evaluate", jp:"評価する"},
-      {en:"implement", jp:"実行する；実施する"},
-      {en:"maintain", jp:"維持する；主張する"},
-      {en:"suspend", jp:"一時停止する；保留にする"}
+    // ---------------- Data (500-600 Set 1) ----------------
+    const VOCAB = [
+      { en:"accomplish", ja:"達成する" },
+      { en:"allocate", ja:"割り当てる" },
+      { en:"approximately", ja:"およそ／約" },
+      { en:"assemble", ja:"組み立てる；集める" },
+      { en:"assume", ja:"仮定する；引き受ける" },
+      { en:"authorize", ja:"承認する；認可する" },
+      { en:"capacity", ja:"能力；収容能力" },
+      { en:"cautious", ja:"用心深い；慎重な" },
+      { en:"clarify", ja:"明確にする" },
+      { en:"collaborate", ja:"協力する；共同で行う" },
+      { en:"compile", ja:"まとめる；編集する" },
+      { en:"confirm", ja:"確認する" },
+      { en:"conserve", ja:"節約する；保存する" },
+      { en:"consistent", ja:"一貫した；矛盾のない" },
+      { en:"decline", ja:"断る；減少する" },
+      { en:"encourage", ja:"励ます；促す" },
+      { en:"evaluate", ja:"評価する" },
+      { en:"implement", ja:"実行する；実施する" },
+      { en:"maintain", ja:"維持する；主張する" },
+      { en:"suspend", ja:"一時停止する；保留にする" }
     ];
 
-    const sentences = [
-      {en:"We need to allocate more time to training.", jp:"研修にもっと時間を割り当てる必要があります。"},
-      {en:"The parts are easy to assemble with the manual.", jp:"その部品は取扱説明書で簡単に組み立てられます。"},
-      {en:"Please confirm your attendance by Friday.", jp:"金曜日までに出欠をご確認ください。"},
-      {en:"Sales declined slightly last quarter.", jp:"先四半期に売上はわずかに減少しました。"},
-      {en:"Her explanation clarified the policy.", jp:"彼女の説明で方針が明確になりました。"},
-      {en:"The company authorized the refund.", jp:"会社は返金を承認しました。"},
-      {en:"Our factory operates at full capacity in summer.", jp:"当工場は夏に最大稼働しています。"},
-      {en:"Be cautious when signing the contract.", jp:"契約に署名する際は慎重になってください。"},
-      {en:"We will collaborate with a local supplier.", jp:"地元のサプライヤーと協力します。"},
-      {en:"The report compiles data from three surveys.", jp:"その報告書は3つの調査からのデータをまとめています。"},
-      {en:"They implemented a new security system.", jp:"彼らは新しいセキュリティシステムを実施しました。"},
-      {en:"Please conserve energy after hours.", jp:"営業時間外はエネルギーを節約してください。"},
-      {en:"We evaluate projects every quarter.", jp:"我々は四半期ごとにプロジェクトを評価します。"},
-      {en:"The machine requires regular maintenance.", jp:"その機械には定期的な保守が必要です。"},
-      {en:"He assumed the role of team leader.", jp:"彼はチームリーダーの役割を引き受けました。"},
-      {en:"Results remain consistent across tests.", jp:"結果はテスト全体で一貫しています。"},
-      {en:"The event was suspended due to the weather.", jp:"天候のためイベントは一時中止になりました。"},
-      {en:"Encourage customers to leave feedback.", jp:"顧客にフィードバックの記入を促してください。"},
-      {en:"We accomplished our yearly targets.", jp:"年間目標を達成しました。"},
-      {en:"The estimate is approximately ten percent lower.", jp:"見積もりはおよそ10%低くなっています。"}
+    const SENTENCES = [
+      { en:"We need to allocate more time to training.", ja:"研修にもっと時間を割り当てる必要があります。" },
+      { en:"The parts are easy to assemble with the manual.", ja:"その部品は取扱説明書で簡単に組み立てられます。" },
+      { en:"Please confirm your attendance by Friday.", ja:"金曜日までに出欠をご確認ください。" },
+      { en:"Sales declined slightly last quarter.", ja:"先四半期に売上はわずかに減少しました。" },
+      { en:"Her explanation clarified the policy.", ja:"彼女の説明で方針が明確になりました。" },
+      { en:"The company authorized the refund.", ja:"会社は返金を承認しました。" },
+      { en:"Our factory operates at full capacity in summer.", ja:"当工場は夏に最大稼働しています。" },
+      { en:"Be cautious when signing the contract.", ja:"契約に署名する際は慎重になってください。" },
+      { en:"We will collaborate with a local supplier.", ja:"地元のサプライヤーと協力します。" },
+      { en:"The report compiles data from three surveys.", ja:"その報告書は3つの調査からのデータをまとめています。" },
+      { en:"They implemented a new security system.", ja:"彼らは新しいセキュリティシステムを実施しました。" },
+      { en:"Please conserve energy after hours.", ja:"営業時間外はエネルギーを節約してください。" },
+      { en:"We evaluate projects every quarter.", ja:"我々は四半期ごとにプロジェクトを評価します。" },
+      { en:"The machine requires regular maintenance.", ja:"その機械には定期的な保守が必要です。" },
+      { en:"He assumed the role of team leader.", ja:"彼はチームリーダーの役割を引き受けました。" },
+      { en:"Results remain consistent across tests.", ja:"結果はテスト全体で一貫しています。" },
+      { en:"The event was suspended due to the weather.", ja:"天候のためイベントは一時中止になりました。" },
+      { en:"Encourage customers to leave feedback.", ja:"顧客にフィードバックの記入を促してください。" },
+      { en,"We accomplished our yearly targets.":"We accomplished our yearly targets.", ja:"年間目標を達成しました。" },
+      { en:"The estimate is approximately ten percent lower.", ja:"見積もりはおよそ10%低くなっています。" }
     ];
 
-    const qa = [
-      {q:"What does 'allocate' mean in project management?", a:"To assign resources, time, or money to tasks.", jp:"プロジェクト管理での『allocate』は、資源・時間・資金をタスクに割り当てること。"},
-      {q:"When should you confirm a meeting?", a:"After the date/time is set and before the day of the meeting.", jp:"日時が決まった後で、当日より前に確認する。"},
-      {q:"Why conserve energy at the office?", a:"To reduce costs and environmental impact.", jp:"コストと環境負荷を減らすため。"},
-      {q:"What is consistent performance?", a:"Results that are stable and reliable over time.", jp:"時間が経っても安定・信頼できる成果。"},
-      {q:"How do teams collaborate online?", a:"Using shared tools like chat, docs, and task boards.", jp:"チャット、ドキュメント、タスクボードなどの共有ツールを使う。"},
-      {q:"What does it mean to implement a plan?", a:"To execute it in practice.", jp:"実際に実行すること。"},
-      {q:"When might a company suspend operations?", a:"During emergencies or system maintenance.", jp:"緊急時やシステム保守の間。"},
-      {q:"How do you evaluate a vendor?", a:"By price, quality, reliability, and service.", jp:"価格・品質・信頼性・サービスで評価する。"},
-      {q:"What does 'assume responsibility' imply?", a:"You accept the duty and its consequences.", jp:"責任とその結果を引き受けること。"},
-      {q:"What is the capacity of a venue?", a:"The maximum number of people it can hold.", jp:"収容可能な最大人数。"},
-      {q:"Why clarify instructions?", a:"To prevent mistakes and delays.", jp:"ミスと遅延を防ぐため。"},
-      {q:"How can managers encourage staff?", a:"By recognizing efforts and offering support.", jp:"努力を認め、支援を提供する。"},
-      {q:"What does 'compile a report' involve?", a:"Collecting and organizing information.", jp:"情報を収集し整理すること。"},
-      {q:"When do sales typically decline?", a:"During off-peak seasons or recessions.", jp:"閑散期や不況のとき。"},
-      {q:"What is approximately ten minutes?", a:"About eight to twelve minutes.", jp:"8〜12分程度。"},
-      {q:"Why be cautious with emails?", a:"To avoid scams and data leaks.", jp:"詐欺や情報漏えいを避けるため。"},
-      {q:"How do you maintain equipment?", a:"Clean, inspect, and service it regularly.", jp:"定期的に清掃・点検・整備する。"},
-      {q:"Who can authorize expenses?", a:"Supervisors or finance departments.", jp:"上長や経理部門。"},
-      {q:"What does 'accomplish a task' mean?", a:"Finish it successfully.", jp:"うまくやり遂げること。"},
-      {q:"What happens when teams fail to collaborate?", a:"Work is duplicated and deadlines are missed.", jp:"作業の重複や締切遅延が起きる。"}
+    const QA = [
+      { q_en:"What does 'allocate' mean in project management?", a_en:"To assign resources, time, or money to tasks.", q_ja:"プロジェクト管理での『allocate』は何を意味しますか？", a_ja:"資源・時間・資金をタスクに割り当てること。" },
+      { q_en:"When should you confirm a meeting?", a_en:"After the date/time is set and before the day of the meeting.", q_ja:"会議はいつ確認すべきですか？", a_ja:"日時が決まった後で、当日より前に確認する。" },
+      { q_en:"Why conserve energy at the office?", a_en:"To reduce costs and environmental impact.", q_ja:"なぜオフィスでエネルギーを節約するのですか？", a_ja:"コストと環境負荷を減らすため。" },
+      { q_en:"What is consistent performance?", a_en:"Results that are stable and reliable over time.", q_ja:"一貫した業績とは？", a_ja:"時間が経っても安定・信頼できる成果。" },
+      { q_en:"How do teams collaborate online?", a_en:"Using shared tools like chat, docs, and task boards.", q_ja:"チームはオンラインでどう協力しますか？", a_ja:"チャット、ドキュメント、タスクボードなどの共有ツールを使う。" },
+      { q_en:"What does it mean to implement a plan?", a_en:"To execute it in practice.", q_ja:"計画を実行するとは？", a_ja:"実際に実行すること。" },
+      { q_en:"When might a company suspend operations?", a_en:"During emergencies or system maintenance.", q_ja:"会社が業務を停止するのはいつ？", a_ja:"緊急時やシステム保守の間。" },
+      { q_en:"How do you evaluate a vendor?", a_en:"By price, quality, reliability, and service.", q_ja:"ベンダーをどう評価しますか？", a_ja:"価格・品質・信頼性・サービスで評価する。" },
+      { q_en:"What does 'assume responsibility' imply?", a_en:"You accept the duty and its consequences.", q_ja:"『責任を引き受ける』とは？", a_ja:"責任とその結果を引き受けること。" },
+      { q_en:"What is the capacity of a venue?", a_en:"The maximum number of people it can hold.", q_ja:"会場の収容人数とは？", a_ja:"収容可能な最大人数。" },
+      { q_en:"Why clarify instructions?", a_en:"To prevent mistakes and delays.", q_ja:"指示を明確にする理由は？", a_ja:"ミスと遅延を防ぐため。" },
+      { q_en:"How can managers encourage staff?", a_en:"By recognizing efforts and offering support.", q_ja:"管理職はどうやって職員を励ます？", a_ja:"努力を認め、支援を提供する。" },
+      { q_en:"What does 'compile a report' involve?", a_en:"Collecting and organizing information.", q_ja:"『報告書をまとめる』とは？", a_ja:"情報を収集し整理すること。" },
+      { q_en:"When do sales typically decline?", a_en:"During off-peak seasons or recessions.", q_ja:"売上が落ちやすい時期は？", a_ja:"閑散期や不況のとき。" },
+      { q_en:"What is approximately ten minutes?", a_en:"About eight to twelve minutes.", q_ja:"『約10分』とは？", a_ja:"8〜12分程度。" },
+      { q_en:"Why be cautious with emails?", a_en:"To avoid scams and data leaks.", q_ja:"メールに注意すべき理由は？", a_ja:"詐欺や情報漏えいを避けるため。" },
+      { q_en:"How do you maintain equipment?", a_en:"Clean, inspect, and service it regularly.", q_ja:"設備の維持方法は？", a_ja:"定期的に清掃・点検・整備する。" },
+      { q_en:"Who can authorize expenses?", a_en:"Supervisors or finance departments.", q_ja:"費用を承認できるのは誰？", a_ja:"上長や経理部門。" },
+      { q_en:"What does 'accomplish a task' mean?", a_en:"Finish it successfully.", q_ja:"『タスクを達成する』とは？", a_ja:"うまくやり遂げること。" },
+      { q_en:"What happens when teams fail to collaborate?", a_en:"Work is duplicated and deadlines are missed.", q_ja:"協力できないと何が起きる？", a_ja:"作業の重複や締切遅延が起きる。" }
     ];
 
-    const quiz = [
-      {q:"'Allocate' is closest in meaning to:", options:["distribute","repair","delay","dismiss"], answer:0},
-      {q:"'Approximately' means:", options:["exactly","about","rarely","equally"], answer:1},
-      {q:"To 'assemble' equipment is to:", options:["store it","build it","ship it","return it"], answer:1},
-      {q:"'Authorize' most nearly means:", options:["approve","argue","announce","avoid"], answer:0},
-      {q:"'Capacity' refers to:", options:["cost of labor","maximum ability","average time","customer review"], answer:1},
-      {q:"A 'cautious' approach is:", options:["careless","patient","careful","creative"], answer:2},
-      {q:"To 'clarify' instructions is to:", options:["shorten them","make them clear","ignore them","translate them"], answer:1},
-      {q:"Teams 'collaborate' when they:", options:["compete","work together","rotate jobs","work overtime"], answer:1},
-      {q:"To 'compile' data means to:", options:["delete it","compare it","collect it","share it"], answer:2},
-      {q:"To 'confirm' an order is to:", options:["cancel it","verify it","ship it","print it"], answer:1},
-      {q:"To 'conserve' resources is to:", options:["save them","spend them","waste them","audit them"], answer:0},
-      {q:"'Consistent' results are:", options:["irregular","similar over time","unexpected","declining"], answer:1},
-      {q:"To 'decline' an invitation is to:", options:["accept","postpone","refuse","repeat"], answer:2},
-      {q:"To 'encourage' staff is to:", options:["criticize","motivate","replace","observe"], answer:1},
-      {q:"To 'evaluate' a program is to:", options:["guess","measure","announce","install"], answer:1},
-      {q:"To 'implement' a policy is to:", options:["plan it","discuss it","enforce it","oppose it"], answer:2},
-      {q:"To 'maintain' equipment is to:", options:["ignore","repair regularly","sell","relocate"], answer:1},
-      {q:"To 'assume' a role is to:", options:["reject it","take it on","criticize it","limit it"], answer:1},
-      {q:"To 'suspend' service is to:", options:["reduce cost","improve quality","pause temporarily","expand rapidly"], answer:2},
-      {q:"To 'accomplish' a goal is to:", options:["begin it","delay it","achieve it","question it"], answer:2}
+    // Quiz: 20 Qs, 4 options each, answer=correct index
+    const QUIZ = [
+      { q:"'Allocate' is closest in meaning to:", options:["distribute","repair","delay","dismiss"], answer:0, ja:"『allocate』に最も近い意味は？" },
+      { q:"'Approximately' means:", options:["exactly","about","rarely","equally"], answer:1, ja:"『approximately』の意味は？" },
+      { q:"To 'assemble' equipment is to:", options:["store it","build it","ship it","return it"], answer:1, ja:"機器を『assemble』するとは？" },
+      { q:"'Authorize' most nearly means:", options:["approve","argue","announce","avoid"], answer:0, ja:"『authorize』の意味に最も近いのは？" },
+      { q:"'Capacity' refers to:", options:["cost of labor","maximum ability","average time","customer review"], answer:1, ja:"『capacity』は何を指す？" },
+      { q:"A 'cautious' approach is:", options:["careless","patient","careful","creative"], answer:2, ja:"『cautious』なアプローチは？" },
+      { q:"To 'clarify' instructions is to:", options:["shorten them","make them clear","ignore them","translate them"], answer:1, ja:"指示を『clarify』するとは？" },
+      { q:"Teams 'collaborate' when they:", options:["compete","work together","rotate jobs","work overtime"], answer:1, ja:"チームが『collaborate』するのは？" },
+      { q:"To 'compile' data means to:", options:["delete it","compare it","collect it","share it"], answer:2, ja:"データを『compile』するとは？" },
+      { q:"To 'confirm' an order is to:", options:["cancel it","verify it","ship it","print it"], answer:1, ja:"注文を『confirm』するとは？" },
+      { q:"To 'conserve' resources is to:", options:["save them","spend them","waste them","audit them"], answer:0, ja:"資源を『conserve』するとは？" },
+      { q:"'Consistent' results are:", options:["irregular","similar over time","unexpected","declining"], answer:1, ja:"『consistent』な結果とは？" },
+      { q:"To 'decline' an invitation is to:", options:["accept","postpone","refuse","repeat"], answer:2, ja:"招待を『decline』するとは？" },
+      { q:"To 'encourage' staff is to:", options:["criticize","motivate","replace","observe"], answer:1, ja:"職員を『encourage』するとは？" },
+      { q:"To 'evaluate' a program is to:", options:["guess","measure","announce","install"], answer:1, ja:"プログラムを『evaluate』するとは？" },
+      { q:"To 'implement' a policy is to:", options:["plan it","discuss it","enforce it","oppose it"], answer:2, ja:"方針を『implement』するとは？" },
+      { q:"To 'maintain' equipment is to:", options:["ignore","repair regularly","sell","relocate"], answer:1, ja:"設備を『maintain』するとは？" },
+      { q:"To 'assume' a role is to:", options:["reject it","take it on","criticize it","limit it"], answer:1, ja:"役割を『assume』するとは？" },
+      { q:"To 'suspend' service is to:", options:["reduce cost","improve quality","pause temporarily","expand rapidly"], answer:2, ja:"サービスを『suspend』するとは？" },
+      { q:"To 'accomplish' a goal is to:", options:["begin it","delay it","achieve it","question it"], answer:2, ja:"目標を『accomplish』するとは？" }
     ];
 
-    // -------------------- APP SHELL --------------------
-    const MODES = [
-      { id:"vocab-j2e", label:"Vocab J→E" },
-      { id:"vocab-e2j", label:"Vocab E→J" },
-      { id:"sentences", label:"Sentences" },
-      { id:"qa", label:"Q&A" },
-      { id:"quiz", label:"Quiz" }
+    const READING = [
+      { en:"The team will implement the new plan next month.", ja:"チームは来月新しい計画を実行します。" },
+      { en:"Please confirm your reservation online.", ja:"予約をオンラインで確認してください。" },
+      { en:"We must conserve power after 7 p.m.", ja:"午後7時以降は節電してください。" },
+      { en:"The venue's capacity is 500 people.", ja:"会場の収容人数は500人です。" },
+      { en:"Results remained consistent throughout the year.", ja:"結果は一年を通して一貫していました。" },
+      { en:"Sales declined due to the weather.", ja:"天候の影響で売上が落ちました。" },
+      { en:"They collaborated with a foreign partner.", ja:"彼らは海外のパートナーと協力しました。" },
+      { en:"Please clarify the delivery date.", ja:"納期を明確にしてください。" },
+      { en:"We evaluate customer feedback quarterly.", ja:"顧客の声は四半期ごとに評価します。" },
+      { en:"The event was suspended for safety reasons.", ja:"安全上の理由でイベントは中止されました。" },
+      { en:"The company authorized overtime this week.", ja:"今週は会社が残業を承認しました。" },
+      { en:"He assumed responsibility for the project.", ja:"彼はプロジェクトの責任を引き受けました。" },
+      { en:"Please assemble the shelves carefully.", ja:"棚を注意して組み立ててください。" },
+      { en:"We accomplished all tasks on schedule.", ja:"全ての作業を予定通り達成しました。" },
+      { en:"The estimate is approximately $200 lower.", ja:"見積もりは約200ドル低くなっています。" },
+      { en:"Be cautious of suspicious links in emails.", ja:"メールの不審なリンクに注意してください。" },
+      { en:"This machine requires daily maintenance.", ja:"この機械には毎日の保守が必要です。" },
+      { en:"Compile the data into one spreadsheet.", ja:"データを1つのスプレッドシートにまとめてください。" },
+      { en:"The manager encouraged us to apply.", ja:"上司は応募するよう私たちを励ましてくれました。" },
+      { en:"The hotel has limited parking capacity.", ja:"ホテルの駐車スペースは限られています。" }
     ];
 
-    const stage = document.getElementById('stage');
-    const bar = document.getElementById('modeBar');
+    // -------------- State & Elements --------------
+    let deck = [];
+    let index = 0;
+    let showingFront = true;
 
-    let state = {
-      mode: MODES[0].id,
-      i: 0,
-      quizIndex: 0,
-      showJP: true,
+    const els = {
+      mode: document.getElementById('mode'),
+      card: document.getElementById('card'),
+      label: document.getElementById('label'),
+      main: document.getElementById('main'),
+      sub: document.getElementById('sub'),
+      hira: document.getElementById('hira'),
+      counter: document.getElementById('counter'),
+      bar: document.getElementById('bar'),
+      btnPrev: document.getElementById('btnPrev'),
+      btnNext: document.getElementById('btnNext'),
+      btnFlip: document.getElementById('btnFlip'),
+      btnShuffle: document.getElementById('btnShuffle'),
+      mcArea: document.getElementById('mcArea'),
     };
 
-    function saveHash(){
-      location.hash = `${state.mode}:${state.i}`;
-    }
-    function loadHash(){
-      const h = location.hash.replace('#','');
-      const [m, idx] = h.split(':');
-      if(MODES.some(x=>x.id===m)) state.mode = m;
-      state.i = Number(idx||0)||0;
-    }
+    // -------------- Helpers --------------
+    function shuffle(arr){ for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]]} return arr; }
 
-    function renderBar(){
-      bar.innerHTML = '';
-      MODES.forEach(m=>{
-        const b = document.createElement('button');
-        b.className = 'tab' + (state.mode===m.id?' active':'');
-        b.textContent = m.label;
-        b.onclick = ()=>{ state.mode = m.id; state.i = 0; state.quizIndex = 0; saveHash(); render(); };
-        bar.appendChild(b);
-      });
-    }
-
-    function navControls(total){
-      const el = document.createElement('div');
-      el.className = 'row';
-      el.innerHTML = `
-        <div class="flex">
-          <button class="btn" id="prevBtn">◀ Prev</button>
-          <button class="btn" id="nextBtn">Next ▶</button>
-          <button class="btn" id="randBtn">Shuffle</button>
-          <label class="btn" style="display:flex;gap:8px;align-items:center">
-            <input type="checkbox" id="jpToggle" ${state.showJP? 'checked':''}/> 日本語
-          </label>
-        </div>
-        <div class="flex" style="min-width:220px;justify-content:flex-end">
-          <div class="progress" style="width:200px"><div style="width:${((state.i+1)/total)*100}%"></div></div>
-          <span class="small">${state.i+1} / ${total}</span>
-        </div>`;
-      el.querySelector('#prevBtn').onclick = ()=>{ state.i = Math.max(0, state.i-1); saveHash(); render(); };
-      el.querySelector('#nextBtn').onclick = ()=>{ state.i = Math.min(total-1, state.i+1); saveHash(); render(); };
-      el.querySelector('#randBtn').onclick = ()=>{ state.i = Math.floor(Math.random()*total); saveHash(); render(); };
-      el.querySelector('#jpToggle').onchange = (e)=>{ state.showJP = e.target.checked; render(); };
-      return el;
-    }
-
-    function renderVocabJ2E(){
-      const total = vocab.length;
-      const v = vocab[state.i];
-      stage.innerHTML = '';
-      stage.appendChild(navControls(total));
-      const box = document.createElement('div');
-      box.className = 'grid';
-      box.innerHTML = `
-        <div class="chip">
-          <div class="small ghost">日本語 → 英語</div>
-          <div class="big">${state.showJP? v.jp : '•••'}</div>
-          <div class="small">Answer:</div>
-          <div class="big" style="color:var(--accent)">${v.en}</div>
-        </div>`;
-      stage.appendChild(box);
-    }
-
-    function renderVocabE2J(){
-      const total = vocab.length;
-      const v = vocab[state.i];
-      stage.innerHTML='';
-      stage.appendChild(navControls(total));
-      const box = document.createElement('div');
-      box.className='grid';
-      box.innerHTML = `
-        <div class="chip">
-          <div class="small ghost">英語 → 日本語</div>
-          <div class="big">${v.en}</div>
-          <div class="small">答え：</div>
-          <div class="big" style="color:var(--accent)">${state.showJP? v.jp : '•••'}</div>
-        </div>`;
-      stage.appendChild(box);
-    }
-
-    function renderSentences(){
-      const total = sentences.length;
-      const s = sentences[state.i];
-      stage.innerHTML='';
-      stage.appendChild(navControls(total));
-      const card = document.createElement('div');
-      card.className='chip';
-      card.innerHTML = `
-        <div class="small ghost">Sentence</div>
-        <div class="big">${s.en}</div>
-        <div class="qa small" style="margin-top:8px">${state.showJP? s.jp : ''}</div>`;
-      stage.appendChild(card);
-    }
-
-    function renderQA(){
-      const total = qa.length;
-      const item = qa[state.i];
-      stage.innerHTML='';
-      stage.appendChild(navControls(total));
-      const card = document.createElement('div');
-      card.className='chip';
-      card.innerHTML = `
-        <div class="small ghost">Q&A</div>
-        <div class="big" style="margin-bottom:6px">Q. ${item.q}</div>
-        <div class="qa"><span class="small">A.</span> ${item.a}</div>
-        <div class="qa small">${state.showJP? item.jp : ''}</div>`;
-      stage.appendChild(card);
-    }
-
-    function renderQuiz(){
-      const idx = state.quizIndex;
-      const total = quiz.length;
-      const q = quiz[idx];
-      stage.innerHTML = '';
-
-      // Header + progress
-      const head = document.createElement('div');
-      head.className='row';
-      head.innerHTML = `
-        <div class="flex">
-          <button class="btn" id="restart">Restart</button>
-          <span class="note">Wrong answers stay red. Choose the correct answer to continue.</span>
-        </div>
-        <div class="flex" style="min-width:220px;justify-content:flex-end">
-          <div class="progress" style="width:200px"><div style="width:${((idx)/total)*100}%"></div></div>
-          <span class="small">${idx} / ${total}</span>
-        </div>`;
-      head.querySelector('#restart').onclick = ()=>{ state.quizIndex = 0; renderQuiz(); };
-      stage.appendChild(head);
-
-      // Question card
-      const box = document.createElement('div');
-      box.className='chip';
-      const title = document.createElement('div');
-      title.className='big';
-      title.textContent = q.q;
-      box.appendChild(title);
-
-      // Options with behavior: keep wrong red; only allow Next after correct
-      const optsWrap = document.createElement('div');
-      let solved = false;
-      q.options.forEach((t,i)=>{
-        const b = document.createElement('button');
-        b.className='opt';
-        b.textContent = `${String.fromCharCode(65+i)}. ${t}`;
-        b.onclick = ()=>{
-          if(solved) return; // ignore after solve
-          if(i===q.answer){
-            b.classList.add('right');
-            solved = true;
-            nextBtn.disabled = false;
-            progressNow();
-          } else {
-            b.classList.add('wrong');
-            b.disabled = true; // keep it red and disabled
-          }
-        };
-        optsWrap.appendChild(b);
-      });
-      box.appendChild(optsWrap);
-
-      // Footer controls
-      const foot = document.createElement('div');
-      foot.className='row';
-      const left = document.createElement('div');
-      left.className='flex';
-      const right = document.createElement('div');
-      right.className='flex';
-      const nextBtn = document.createElement('button');
-      nextBtn.className='btn';
-      nextBtn.textContent = idx === total-1 ? 'Finish' : 'Next ▶';
-      nextBtn.disabled = true; // locked until correct
-      nextBtn.onclick = ()=>{
-        if(idx < total-1){ state.quizIndex++; renderQuiz(); }
-        else { renderQuizSummary(); }
-      };
-      right.appendChild(nextBtn);
-      foot.appendChild(left); foot.appendChild(right);
-
-      stage.appendChild(box);
-      stage.appendChild(foot);
-
-      function progressNow(){
-        // (Optional) mini effect; no external libs
-        box.style.outline = '2px solid var(--right)';
-        setTimeout(()=> box.style.outline = 'none', 300);
+    // -------------- Build Decks --------------
+    function buildDeck(){
+      const mode = els.mode.value;
+      if(mode==='vocab-j2e' || mode==='vocab-e2j'){
+        deck = VOCAB.map(x=>({
+          type:'vocab',
+          front: mode==='vocab-j2e' ? x.ja : x.en,
+          back:  mode==='vocab-j2e' ? x.en : x.ja,
+          sideLabelFront: mode==='vocab-j2e' ? 'Japanese → English' : 'English → Japanese',
+          sideLabelBack:  mode==='vocab-j2e' ? 'English' : 'Japanese',
+        }));
+      } else if(mode==='sentences'){
+        deck = SENTENCES.map(s=>({
+          type:'sentence',
+          front: s.ja,
+          back: s.en + '
+' + s.ja,
+          sideLabelFront: 'Japanese sentence',
+          sideLabelBack: 'Answer (EN + JA)',
+        }));
+      } else if(mode==='qa'){
+        deck = QA.map(q=>({
+          type:'qa',
+          front: q.q_ja || q.q_en, // prefer JA question if present
+          back: (q.a_en||'') + (q.a_ja?'
+'+q.a_ja:'') ,
+          sideLabelFront: (q.q_ja?'Question (JA)':'Question (EN)'),
+          sideLabelBack: 'Answer (EN + JA)',
+        }));
+      } else if(mode==='quiz'){
+        deck = QUIZ.map(q=>({
+          type:'quiz4',
+          front: q.q,
+          back: (q.ja? q.ja+'
+' : '') + 'Answer: ' + q.options[q.answer],
+          options: q.options,
+          answer: q.answer,
+          sideLabelFront: 'Choose the best answer',
+          sideLabelBack: 'Explanation',
+        }));
+      } else if(mode==='reading'){
+        deck = READING.map(r=>({
+          type:'reading',
+          front: r.en,
+          back: r.en + '
+' + r.ja,
+          sideLabelFront: 'Reading (EN)',
+          sideLabelBack: 'Reading (EN + JA)',
+        }));
       }
+      index = 0; showingFront = true; render();
     }
 
-    function renderQuizSummary(){
-      stage.innerHTML='';
-      const done = document.createElement('div');
-      done.className='chip';
-      done.innerHTML = `
-        <div class="big">Great job! 🎉</div>
-        <div class="small">You finished all ${quiz.length} questions.</div>
-        <div class="flex" style="margin-top:10px">
-          <button class="btn" id="again">Restart Quiz</button>
-          <button class="btn" id="back">Back to Vocab</button>
-        </div>`;
-      stage.appendChild(done);
-      done.querySelector('#again').onclick = ()=>{ state.quizIndex=0; renderQuiz(); };
-      done.querySelector('#back').onclick = ()=>{ state.mode='vocab-j2e'; state.i=0; saveHash(); render(); };
-    }
-
+    // -------------- Render --------------
     function render(){
-      renderBar();
-      if(state.mode==='vocab-j2e') return renderVocabJ2E();
-      if(state.mode==='vocab-e2j') return renderVocabE2J();
-      if(state.mode==='sentences') return renderSentences();
-      if(state.mode==='qa') return renderQA();
-      if(state.mode==='quiz') return renderQuiz();
+      if(deck.length===0){ els.main.textContent='—'; els.sub.textContent='No cards'; els.counter.textContent='0 / 0'; return; }
+      const item = deck[index];
+      const mode = els.mode.value;
+      els.label.textContent = showingFront ? item.sideLabelFront : item.sideLabelBack;
+
+      // Main text & sub-lines
+      const content = showingFront ? item.front : item.back;
+      if((!showingFront) && (item.type==='qa' || item.type==='sentence' || item.type==='reading') && content.includes('
+')){
+        const [line1, line2] = content.split('
+');
+        els.main.innerHTML = `<div style="font-size:22px;font-weight:700" class="${item.type==='reading'?'small':''}">${line1}</div>
+                              <div class="sub ${item.type==='reading'?'small':''}" style="margin-top:8px">${line2}</div>`;
+      } else {
+        els.main.innerHTML = `<div class="${item.type==='reading'?'small':''}">${content}</div>`;
+      }
+
+      // QUIZ 4-choice behavior
+      if(mode==='quiz' && item.type==='quiz4' && showingFront){
+        els.sub.textContent = 'Choose the correct answer.';
+        els.mcArea.classList.remove('hidden');
+        els.mcArea.innerHTML = '';
+        item.options.forEach((opt, i)=>{
+          const btn = document.createElement('button');
+          btn.className = 'optbtn';
+          btn.textContent = opt;
+          btn.addEventListener('click', (e)=>{
+            e.preventDefault(); e.stopPropagation();
+            // Wrong stays red, do NOT reveal the correct automatically, do NOT progress.
+            if(i !== item.answer){
+              btn.classList.add('bad');
+              btn.disabled = true; // keep it red and disabled
+              return;
+            }
+            // Correct → mark green, then reveal back (answer/explanation)
+            btn.classList.add('ok');
+            // disable the rest
+            [...els.mcArea.querySelectorAll('button')].forEach(b=>b.disabled=true);
+            setTimeout(()=>{ showingFront = false; render(); }, 250);
+          }, { passive:false });
+          els.mcArea.appendChild(btn);
+        });
+      } else {
+        els.mcArea.classList.add('hidden');
+        els.mcArea.innerHTML = '';
+        if(item.type==='quiz4' && showingFront){ els.sub.textContent = 'Choose the correct answer.'; }
+        else { els.sub.textContent = 'Tap / Space to flip · Swipe / ← → to navigate'; }
+      }
+
+      // Footer counters
+      els.counter.textContent = `${index+1} / ${deck.length}`;
+      els.bar.style.width = `${((index+1)/deck.length)*100}%`;
+
+      setHash();
     }
+
+    // -------------- Navigation --------------
+    function prev(){ index = (index-1+deck.length)%deck.length; showingFront=true; render(); }
+    function next(){ index = (index+1)%deck.length; showingFront=true; render(); }
+    function flip(){ showingFront = !showingFront; render(); }
+    function shuffleDeck(){ deck = shuffle(deck); index=0; showingFront=true; render(); }
+
+    // -------------- URL Hash --------------
+    function setHash(){ location.hash = `#${els.mode.value}:${index}`; }
+    function readHash(){
+      const h = location.hash.replace('#','');
+      if(!h) return;
+      const [m, i] = h.split(':');
+      if(m && [...els.mode.options].some(o=>o.value===m)) els.mode.value = m;
+      if(i && !Number.isNaN(+i)) index = Math.max(0, Math.min(deck.length-1, +i));
+    }
+
+    // -------------- Events --------------
+    els.mode.addEventListener('change', ()=>{ buildDeck(); setHash(); });
+    document.getElementById('btnPrev').addEventListener('click', prev);
+    document.getElementById('btnNext').addEventListener('click', next);
+    document.getElementById('btnFlip').addEventListener('click', flip);
+    document.getElementById('btnShuffle').addEventListener('click', shuffleDeck);
+
+    // Keyboard
+    window.addEventListener('keydown', (e)=>{
+      if(e.code==='ArrowLeft'){ e.preventDefault(); prev(); }
+      else if(e.code==='ArrowRight'){ e.preventDefault(); next(); }
+      else if(e.code==='Space'){ e.preventDefault(); if(!(els.mode.value==='quiz' && showingFront)) flip(); }
+      else if(['1','2','3','4'].includes(e.key) && els.mode.value==='quiz' && showingFront){
+        const i = parseInt(e.key,10)-1; const b=els.mcArea.querySelectorAll('button')[i]; if(b) b.click();
+      }
+    });
+
+    // Click/Touch to flip (disabled on Quiz front)
+    document.getElementById('card').addEventListener('click', (e)=>{
+      if(els.mode.value==='quiz' && showingFront) return;
+      flip();
+    }, { passive:true });
+
+    // Swipe
+    let touchStartX=null, touchStartY=null;
+    document.getElementById('card').addEventListener('touchstart', (e)=>{
+      const t=e.changedTouches[0]; touchStartX=t.clientX; touchStartY=t.clientY;
+    }, {passive:true});
+    document.getElementById('card').addEventListener('touchend', (e)=>{
+      const t=e.changedTouches[0]; if(touchStartX===null) return;
+      const dx=t.clientX - touchStartX; const dy=t.clientY - touchStartY;
+      if(Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)){
+        if(dx>0) prev(); else next();
+      } else if(Math.abs(dy)<10 && Math.abs(dx)<10){
+        if(!(els.mode.value==='quiz' && showingFront)) flip();
+      }
+      touchStartX=touchStartY=null;
+    }, {passive:true});
 
     // Init
-    loadHash();
+    buildDeck();
+    readHash();
     render();
-    window.addEventListener('hashchange', ()=>{ loadHash(); render(); });
   </script>
 </body>
 </html>
