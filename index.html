@@ -162,7 +162,7 @@
       { en:"He assumed the role of team leader.", ja:"彼はチームリーダーの役割を引き受けました。" },
       { en:"Results remain consistent across tests.", ja:"結果はテスト全体で一貫しています。" },
       { en:"The event was suspended due to the weather.", ja:"天候のためイベントは一時中止になりました。" },
-      { en:"Encourage customers to leave feedback.", ja:"顧客にフィードバックの記入を促してください。" }, 
+      { en:"Encourage customers to leave feedback.", ja:"顧客にフィードバックの記入を促してください。" },
       { en:"We accomplished our yearly targets.", ja:"年間目標を達成しました。" },
       { en:"The estimate is approximately ten percent lower.", ja:"見積もりはおよそ10%低くなっています。" }
     ];
@@ -276,8 +276,7 @@
         deck = SENTENCES.map(s=>({
           type:'sentence',
           front: s.ja,
-          back: s.en + '
-' + s.ja,
+          back: s.en + '\n' + s.ja,
           sideLabelFront: 'Japanese sentence',
           sideLabelBack: 'Answer (EN + JA)',
         }));
@@ -285,17 +284,15 @@
         deck = QA.map(q=>({
           type:'qa',
           front: q.q_ja || q.q_en, // prefer JA question if present
-          back: (q.a_en||'') + (q.a_ja?'
-'+q.a_ja:'') ,
-          sideLabelFront: (q.q_ja?'Question (JA)':'Question (EN)'),
+          back: (q.a_en||'') + (q.a_ja ? '\n' + q.a_ja : ''),
+          sideLabelFront: (q.q_ja ? 'Question (JA)' : 'Question (EN)'),
           sideLabelBack: 'Answer (EN + JA)',
         }));
       } else if(mode==='quiz'){
         deck = QUIZ.map(q=>({
           type:'quiz4',
           front: q.q,
-          back: (q.ja? q.ja+'
-' : '') + 'Answer: ' + q.options[q.answer],
+          back: (q.ja ? q.ja + '\n' : '') + 'Answer: ' + q.options[q.answer],
           options: q.options,
           answer: q.answer,
           sideLabelFront: 'Choose the best answer',
@@ -305,8 +302,7 @@
         deck = READING.map(r=>({
           type:'reading',
           front: r.en,
-          back: r.en + '
-' + r.ja,
+          back: r.en + '\n' + r.ja,
           sideLabelFront: 'Reading (EN)',
           sideLabelBack: 'Reading (EN + JA)',
         }));
@@ -323,10 +319,8 @@
 
       // Main text & sub-lines
       const content = showingFront ? item.front : item.back;
-      if((!showingFront) && (item.type==='qa' || item.type==='sentence' || item.type==='reading') && content.includes('
-')){
-        const [line1, line2] = content.split('
-');
+      if((!showingFront) && (item.type==='qa' || item.type==='sentence' || item.type==='reading') && content.includes('\n')){
+        const [line1, line2] = content.split('\n');
         els.main.innerHTML = `<div style="font-size:22px;font-weight:700" class="${item.type==='reading'?'small':''}">${line1}</div>
                               <div class="sub ${item.type==='reading'?'small':''}" style="margin-top:8px">${line2}</div>`;
       } else {
