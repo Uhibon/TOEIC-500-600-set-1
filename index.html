@@ -53,6 +53,19 @@
       -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
     .label{color:var(--muted);font-size:13px;letter-spacing:.3px;margin-bottom:8px;
       background:rgba(255,255,255,0.7);padding:4px 8px;border-radius:8px}
+    /* Picture block */
+    .picture{
+      display:block;
+      max-width:88%;
+      width:clamp(260px,88%,760px);
+      aspect-ratio:16/9;
+      object-fit:cover;
+      border-radius:16px;
+      border:1px solid #ddd;
+      box-shadow:0 6px 18px rgba(0,0,0,.15);
+      background:#fff;
+      margin:6px auto 12px;
+    }
     .main{font-size:28px;line-height:1.25;font-weight:800;margin:8px 0 10px;
       background:rgba(255,255,255,0.86);padding:8px 12px;border-radius:12px}
     .sub{font-size:18px;opacity:.92;margin:0 0 6px;background:rgba(255,255,255,0.65);
@@ -97,6 +110,10 @@
     <div id="card" class="card" role="button" aria-label="flashcard" tabindex="0">
       <div class="brand"><img src="booha-ghost.png" alt="Booha ghost"><span>Boo-riculum</span></div>
       <div id="label" class="label">Front</div>
+
+      <!-- NEW: picture slot -->
+      <img id="pic" class="picture hidden" alt="illustration">
+
       <div id="main" class="main">—</div>
       <div id="sub" class="sub muted">Tap or press Space to flip</div>
       <div id="hira" class="hira hidden"></div>
@@ -120,6 +137,24 @@
   </div>
 
   <script>
+    // ---------- Tiny helper to make on-brand "stock-style" SVGs ----------
+    function svg(label, emoji){
+      const esc = s => encodeURIComponent(s);
+      const base = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 675'>
+        <defs>
+          <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+            <stop offset='0%' stop-color='#eaf3ff'/>
+            <stop offset='100%' stop-color='#f7e9ff'/>
+          </linearGradient>
+        </defs>
+        <rect width='1200' height='675' fill='url(#g)'/>
+        <rect x='60' y='60' width='1080' height='555' rx='28' fill='white' stroke='#d7d7d7'/>
+        <text x='600' y='320' font-size='144' text-anchor='middle' dominant-baseline='central'>${emoji||'💼'}</text>
+        <text x='600' y='520' font-size='40' text-anchor='middle' fill='#333' font-family='Inter,Segoe UI,Arial,sans-serif'>${label}</text>
+      </svg>`;
+      return 'data:image/svg+xml;utf8,' + base.replace(/\n/g,'');
+    }
+
     // ---------------- Data (500-600 Set 1) ----------------
     const VOCAB = [
       { en:"accomplish", ja:"達成する" },
@@ -190,7 +225,31 @@
       { q_en:"What happens when teams fail to collaborate?", a_en:"Work is duplicated and deadlines are missed.", q_ja:"協力できないと何が起きる？", a_ja:"作業の重複や締切遅延が起きる。" }
     ];
 
-    // Quiz: 20 Qs, 4 options each, answer=correct index
+    // ---------- Stock-style images (embedded) in QA order ----------
+    const QA_IMAGES = [
+      svg("Allocate resources","🗂️"),
+      svg("Confirm meeting","📅"),
+      svg("Conserve energy","💡"),
+      svg("Consistent performance","📈"),
+      svg("Collaborate online","💬"),
+      svg("Implement plan","✅"),
+      svg("Suspend operations","⏸️"),
+      svg("Evaluate vendor","🧪"),
+      svg("Assume responsibility","🧭"),
+      svg("Venue capacity","🏟️"),
+      svg("Clarify instructions","📝"),
+      svg("Encourage staff","👏"),
+      svg("Compile report","📚"),
+      svg("Sales decline","📉"),
+      svg("Approximately 10 min","⏱️"),
+      svg("Email caution","✉️"),
+      svg("Maintain equipment","🛠️"),
+      svg("Authorize expenses","💳"),
+      svg("Accomplish task","🏁"),
+      svg("No collaboration","🚫🤝")
+    ];
+
+    // ---------------- Quiz data ----------------
     const QUIZ = [
       { q:"'Allocate' is closest in meaning to:", options:["distribute","repair","delay","dismiss"], answer:0, ja:"『allocate』に最も近い意味は？" },
       { q:"'Approximately' means:", options:["exactly","about","rarely","equally"], answer:1, ja:"『approximately』の意味は？" },
@@ -256,6 +315,7 @@
       btnFlip: document.getElementById('btnFlip'),
       btnShuffle: document.getElementById('btnShuffle'),
       mcArea: document.getElementById('mcArea'),
+      pic: document.getElementById('pic'),
     };
 
     // -------------- Helpers --------------
@@ -281,12 +341,13 @@
           sideLabelBack: 'Answer (EN + JA)',
         }));
       } else if(mode==='qa'){
-        deck = QA.map(q=>({
+        deck = QA.map((q,i)=>({
           type:'qa',
-          front: q.q_ja || q.q_en, // prefer JA question if present
+          front: q.q_ja || q.q_en,
           back: (q.a_en||'') + (q.a_ja ? '\n' + q.a_ja : ''),
           sideLabelFront: (q.q_ja ? 'Question (JA)' : 'Question (EN)'),
           sideLabelBack: 'Answer (EN + JA)',
+          img: QA_IMAGES[i] || null
         }));
       } else if(mode==='quiz'){
         deck = QUIZ.map(q=>({
@@ -317,6 +378,16 @@
       const mode = els.mode.value;
       els.label.textContent = showingFront ? item.sideLabelFront : item.sideLabelBack;
 
+      // Picture logic: show for QA (front and back), hide otherwise
+      if(item.img){
+        els.pic.classList.remove('hidden');
+        els.pic.src = item.img;
+        els.pic.alt = (item.sideLabelFront || 'illustration');
+      } else {
+        els.pic.classList.add('hidden');
+        els.pic.removeAttribute('src');
+      }
+
       // Main text & sub-lines
       const content = showingFront ? item.front : item.back;
       if((!showingFront) && (item.type==='qa' || item.type==='sentence' || item.type==='reading') && content.includes('\n')){
@@ -338,15 +409,12 @@
           btn.textContent = opt;
           btn.addEventListener('click', (e)=>{
             e.preventDefault(); e.stopPropagation();
-            // Wrong stays red, do NOT reveal the correct automatically, do NOT progress.
             if(i !== item.answer){
               btn.classList.add('bad');
-              btn.disabled = true; // keep it red and disabled
+              btn.disabled = true;
               return;
             }
-            // Correct → mark green, then reveal back (answer/explanation)
             btn.classList.add('ok');
-            // disable the rest
             [...els.mcArea.querySelectorAll('button')].forEach(b=>b.disabled=true);
             setTimeout(()=>{ showingFront = false; render(); }, 250);
           }, { passive:false });
