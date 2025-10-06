@@ -111,7 +111,7 @@
       <div class="brand"><img src="booha-ghost.png" alt="Booha ghost"><span>Boo-riculum</span></div>
       <div id="label" class="label">Front</div>
 
-      <!-- NEW: picture slot -->
+      <!-- Picture slot -->
       <img id="pic" class="picture hidden" alt="illustration">
 
       <div id="main" class="main">—</div>
@@ -139,7 +139,6 @@
   <script>
     // ---------- Tiny helper to make on-brand "stock-style" SVGs ----------
     function svg(label, emoji){
-      const esc = s => encodeURIComponent(s);
       const base = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 675'>
         <defs>
           <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
@@ -273,29 +272,6 @@
       { q:"To 'accomplish' a goal is to:", options:["begin it","delay it","achieve it","question it"], answer:2, ja:"目標を『accomplish』するとは？" }
     ];
 
-    const READING = [
-      { en:"The team will implement the new plan next month.", ja:"チームは来月新しい計画を実行します。" },
-      { en:"Please confirm your reservation online.", ja:"予約をオンラインで確認してください。" },
-      { en:"We must conserve power after 7 p.m.", ja:"午後7時以降は節電してください。" },
-      { en:"The venue's capacity is 500 people.", ja:"会場の収容人数は500人です。" },
-      { en:"Results remained consistent throughout the year.", ja:"結果は一年を通して一貫していました。" },
-      { en:"Sales declined due to the weather.", ja:"天候の影響で売上が落ちました。" },
-      { en:"They collaborated with a foreign partner.", ja:"彼らは海外のパートナーと協力しました。" },
-      { en:"Please clarify the delivery date.", ja:"納期を明確にしてください。" },
-      { en:"We evaluate customer feedback quarterly.", ja:"顧客の声は四半期ごとに評価します。" },
-      { en:"The event was suspended for safety reasons.", ja:"安全上の理由でイベントは中止されました。" },
-      { en:"The company authorized overtime this week.", ja:"今週は会社が残業を承認しました。" },
-      { en:"He assumed responsibility for the project.", ja:"彼はプロジェクトの責任を引き受けました。" },
-      { en:"Please assemble the shelves carefully.", ja:"棚を注意して組み立ててください。" },
-      { en:"We accomplished all tasks on schedule.", ja:"全ての作業を予定通り達成しました。" },
-      { en:"The estimate is approximately $200 lower.", ja:"見積もりは約200ドル低くなっています。" },
-      { en:"Be cautious of suspicious links in emails.", ja:"メールの不審なリンクに注意してください。" },
-      { en:"This machine requires daily maintenance.", ja:"この機械には毎日の保守が必要です。" },
-      { en:"Compile the data into one spreadsheet.", ja:"データを1つのスプレッドシートにまとめてください。" },
-      { en:"The manager encouraged us to apply.", ja:"上司は応募するよう私たちを励ましてくれました。" },
-      { en:"The hotel has limited parking capacity.", ja:"ホテルの駐車スペースは限られています。" }
-    ];
-
     // -------------- State & Elements --------------
     let deck = [];
     let index = 0;
@@ -378,7 +354,7 @@
       const mode = els.mode.value;
       els.label.textContent = showingFront ? item.sideLabelFront : item.sideLabelBack;
 
-      // Picture logic: show for QA (front and back), hide otherwise
+      // Picture logic: show for items with img (QA), hide otherwise
       if(item.img){
         els.pic.classList.remove('hidden');
         els.pic.src = item.img;
@@ -442,12 +418,22 @@
 
     // -------------- URL Hash --------------
     function setHash(){ location.hash = `#${els.mode.value}:${index}`; }
+
+    // FIXED: read hash → set mode → build deck → set index → render
     function readHash(){
       const h = location.hash.replace('#','');
-      if(!h) return;
+      if(!h){ buildDeck(); return; }
       const [m, i] = h.split(':');
-      if(m && [...els.mode.options].some(o=>o.value===m)) els.mode.value = m;
-      if(i && !Number.isNaN(+i)) index = Math.max(0, Math.min(deck.length-1, +i));
+
+      if(m && [...els.mode.options].some(o=>o.value===m)){
+        els.mode.value = m;
+      }
+      buildDeck(); // now deck is ready for this mode
+
+      if(i && !Number.isNaN(+i)){
+        index = Math.max(0, Math.min(deck.length-1, +i));
+      }
+      render();
     }
 
     // -------------- Events --------------
@@ -489,10 +475,8 @@
       touchStartX=touchStartY=null;
     }, {passive:true});
 
-    // Init
-    buildDeck();
+    // Init (hash-first so #qa:3 loads with images)
     readHash();
-    render();
   </script>
 </body>
 </html>
