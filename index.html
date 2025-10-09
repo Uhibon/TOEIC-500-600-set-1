@@ -73,7 +73,7 @@
     .hira{font-size:18px;color:var(--accent);opacity:.95;background:rgba(255,255,255,0.75);
       padding:4px 10px;border-radius:8px}
     .muted{color:var(--muted)}
-    .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+    .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center}
     .footer{
       display:flex;align-items:center;justify-content:space-between;margin-top:8px;color:var(--muted);font-size:13px;
       background:rgba(255,255,255,0.85);padding:8px 12px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1)
@@ -89,6 +89,16 @@
     .optbtn.ok{background:#dcfce7;border-color:#86efac;color:#166534}
     .optbtn.bad{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
     .small{font-size:15px; line-height:1.45;}
+
+    /* QA audio controls */
+    .qaOnly{display:none}
+    .playBtn{
+      background:#ef4444;color:#fff;border-color:#dc2626;
+      font-weight:800;
+    }
+    .playBtn.paused::after{content:' ▶︎';}
+    .playBtn.playing::after{content:' Ⅱ';}
+    .speedBtn{min-width:74px;text-align:center}
   </style>
 </head>
 <body>
@@ -128,12 +138,19 @@
         <button id="btnFlip" title="Tap / Space">Flip</button>
         <button id="btnNext" title="→ or swipe left">Next ▶︎</button>
         <button id="btnShuffle" title="Shuffle deck">Shuffle</button>
+
+        <!-- QA audio controls -->
+        <button id="btnPlay" class="playBtn qaOnly paused" title="Play/Pause (QA audio)">Play</button>
+        <button id="btnSpeed" class="speedBtn qaOnly" title="Toggle speed">1.0×</button>
       </div>
       <div style="min-width:180px;text-align:right">
         <div id="counter" class="muted">0 / 0</div>
         <div class="progress" aria-hidden="true"><span id="bar"></span></div>
       </div>
     </div>
+
+    <!-- Hidden audio element for QA -->
+    <audio id="qaAudio" preload="metadata"></audio>
   </div>
 
   <script>
@@ -224,8 +241,7 @@
       { q_en:"What happens when teams fail to collaborate?", a_en:"Work is duplicated and deadlines are missed.", q_ja:"協力できないと何が起きる？", a_ja:"作業の重複や締切遅延が起きる。" }
     ];
 
-  
-    // ---------------- Quiz data ----------------
+    // Quiz data (unchanged)
     const QUIZ = [
       { q:"'Allocate' is closest in meaning to:", options:["distribute","repair","delay","dismiss"], answer:0, ja:"『allocate』に最も近い意味は？" },
       { q:"'Approximately' means:", options:["exactly","about","rarely","equally"], answer:1, ja:"『approximately』の意味は？" },
@@ -249,6 +265,14 @@
       { q:"To 'accomplish' a goal is to:", options:["begin it","delay it","achieve it","question it"], answer:2, ja:"目標を『accomplish』するとは？" }
     ];
 
+    // Simple placeholder so "reading" mode doesn't error even if you haven't filled it yet.
+    const READING = [{ en:"Reading passage coming soon…", ja:"準備中…" }];
+
+    // ------------- QA media mappings -------------
+    // 1.jpg..20.jpg and A1.m4a..A20.m4a
+    const QA_IMAGES = Array.from({length:20}, (_,i)=> `${i+1}.jpg`);
+    const QA_AUDIOS = Array.from({length:20}, (_,i)=> `A${i+1}.m4a`);
+
     // -------------- State & Elements --------------
     let deck = [];
     let index = 0;
@@ -269,10 +293,24 @@
       btnShuffle: document.getElementById('btnShuffle'),
       mcArea: document.getElementById('mcArea'),
       pic: document.getElementById('pic'),
+      // QA audio bits
+      btnPlay: document.getElementById('btnPlay'),
+      btnSpeed: document.getElementById('btnSpeed'),
+      qaAudio: document.getElementById('qaAudio'),
     };
 
     // -------------- Helpers --------------
     function shuffle(arr){ for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]]} return arr; }
+    function showQAControls(show){
+      document.querySelectorAll('.qaOnly').forEach(el=>{
+        el.style.display = show ? '' : 'none';
+      });
+      if(!show){
+        els.qaAudio.pause();
+        els.btnPlay.classList.remove('playing');
+        els.btnPlay.classList.add('paused');
+      }
+    }
 
     // -------------- Build Decks --------------
     function buildDeck(){
@@ -300,7 +338,8 @@
           back: (q.a_en||'') + (q.a_ja ? '\n' + q.a_ja : ''),
           sideLabelFront: (q.q_ja ? 'Question (JA)' : 'Question (EN)'),
           sideLabelBack: 'Answer (EN + JA)',
-          img: QA_IMAGES[i] || null
+          img: QA_IMAGES[i] || null,
+          audio: QA_AUDIOS[i] || null
         }));
       } else if(mode==='quiz'){
         deck = QUIZ.map(q=>({
@@ -324,9 +363,45 @@
       index = 0; showingFront = true; render();
     }
 
+    // -------------- QA Audio handling --------------
+    const SPEEDS = [0.5, 0.8, 1.0];
+    let speedIdx = 2; // default 1.0x
+
+    function updateQAAudio(){
+      if(els.mode.value!=='qa' || deck.length===0) return;
+      const item = deck[index];
+      const src = item.audio;
+      if(src){
+        const wasPlaying = !els.qaAudio.paused;
+        els.qaAudio.src = src;
+        els.qaAudio.playbackRate = SPEEDS[speedIdx];
+        if(wasPlaying){
+          els.qaAudio.play().catch(()=>{ /* ignore autoplay block */ });
+        }
+      } else {
+        els.qaAudio.removeAttribute('src');
+      }
+    }
+
+    function setPlayButtonState(){
+      if(els.qaAudio.paused){
+        els.btnPlay.classList.remove('playing');
+        els.btnPlay.classList.add('paused');
+      } else {
+        els.btnPlay.classList.remove('paused');
+        els.btnPlay.classList.add('playing');
+      }
+    }
+
     // -------------- Render --------------
     function render(){
-      if(deck.length===0){ els.main.textContent='—'; els.sub.textContent='No cards'; els.counter.textContent='0 / 0'; return; }
+      if(deck.length===0){ 
+        els.main.textContent='—'; 
+        els.sub.textContent='No cards'; 
+        els.counter.textContent='0 / 0'; 
+        showQAControls(false);
+        return; 
+      }
       const item = deck[index];
       const mode = els.mode.value;
       els.label.textContent = showingFront ? item.sideLabelFront : item.sideLabelBack;
@@ -380,6 +455,16 @@
         else { els.sub.textContent = 'Tap / Space to flip · Swipe / ← → to navigate'; }
       }
 
+      // QA-only UI visibility + audio source update
+      if(mode==='qa'){
+        showQAControls(true);
+        els.btnSpeed.textContent = `${SPEEDS[speedIdx].toFixed(1)}×`;
+        updateQAAudio();
+        setPlayButtonState();
+      } else {
+        showQAControls(false);
+      }
+
       // Footer counters
       els.counter.textContent = `${index+1} / ${deck.length}`;
       els.bar.style.width = `${((index+1)/deck.length)*100}%`;
@@ -420,12 +505,42 @@
     document.getElementById('btnFlip').addEventListener('click', flip);
     document.getElementById('btnShuffle').addEventListener('click', shuffleDeck);
 
+    // QA play/pause
+    els.btnPlay.addEventListener('click', (e)=>{
+      e.preventDefault();
+      if(els.qaAudio.paused){
+        els.qaAudio.play().then(()=> setPlayButtonState()).catch(()=>{/* ignore */});
+      } else {
+        els.qaAudio.pause();
+        setPlayButtonState();
+      }
+    });
+    // QA speed toggle 0.5x → 0.8x → 1.0x → 0.5x …
+    els.btnSpeed.addEventListener('click', (e)=>{
+      e.preventDefault();
+      speedIdx = (speedIdx+1) % SPEEDS.length;
+      els.qaAudio.playbackRate = SPEEDS[speedIdx];
+      els.btnSpeed.textContent = `${SPEEDS[speedIdx].toFixed(1)}×`;
+    });
+    // Keep button state synced with audio events
+    ['play','pause','ended'].forEach(ev=>{
+      els.qaAudio.addEventListener(ev, setPlayButtonState);
+    });
+
     // Keyboard
     window.addEventListener('keydown', (e)=>{
       if(e.code==='ArrowLeft'){ e.preventDefault(); prev(); }
       else if(e.code==='ArrowRight'){ e.preventDefault(); next(); }
-      else if(e.code==='Space'){ e.preventDefault(); if(!(els.mode.value==='quiz' && showingFront)) flip(); }
-      else if(['1','2','3','4'].includes(e.key) && els.mode.value==='quiz' && showingFront){
+      else if(e.code==='Space'){ 
+        // allow space to control play/pause in QA if focus isn't on a button
+        if(els.mode.value==='qa'){
+          e.preventDefault();
+          els.btnPlay.click();
+        } else {
+          e.preventDefault(); 
+          if(!(els.mode.value==='quiz' && showingFront)) flip(); 
+        }
+      } else if(['1','2','3','4'].includes(e.key) && els.mode.value==='quiz' && showingFront){
         const i = parseInt(e.key,10)-1; const b=els.mcArea.querySelectorAll('button')[i]; if(b) b.click();
       }
     });
@@ -433,6 +548,8 @@
     // Click/Touch to flip (disabled on Quiz front)
     document.getElementById('card').addEventListener('click', (e)=>{
       if(els.mode.value==='quiz' && showingFront) return;
+      // In QA, don't flip when the user clicks the inner buttons/pic
+      if(e.target.closest('#btnPlay') || e.target.closest('#btnSpeed') || e.target.id==='pic') return;
       flip();
     }, { passive:true });
 
@@ -452,7 +569,7 @@
       touchStartX=touchStartY=null;
     }, {passive:true});
 
-    // Init (hash-first so #qa:3 loads with images)
+    // Init (hash-first so #qa:3 loads with images/audio)
     readHash();
   </script>
 </body>
