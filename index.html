@@ -80,10 +80,10 @@
     <h1><img src="booha-ghost.png" alt=""> Boo-riculum – TOEIC (500-600) set-1</h1>
     <div class="controls">
       <select id="mode" aria-label="Mode">
-        <option value="vocab-j2e" selected>Vocab: 🇯🇵 → 🇺🇸</option>
+        <option value="vocab-j2e">Vocab: 🇯🇵 → 🇺🇸</option>
         <option value="vocab-e2j">Vocab: 🇺🇸 → 🇯🇵</option>
         <option value="sentences">Sentences (practice)</option>
-        <option value="qa">Questions (practice)</option>
+        <option value="qa" selected>Questions (practice)</option>
         <option value="quiz">Quiz (multiple choice)</option>
         <option value="reading">Reading</option>
       </select>
@@ -126,7 +126,7 @@
 </div>
 
 <script>
-  // --- data ---
+  // ---------- DATA ----------
   const VOCAB = [
     { en:"accomplish", ja:"達成する" }, { en:"allocate", ja:"割り当てる" },
     { en:"approximately", ja:"およそ／約" }, { en:"assemble", ja:"組み立てる；集める" },
@@ -209,7 +209,7 @@
     { q:"To 'accomplish' a goal is to:", options:["begin it","delay it","achieve it","question it"], answer:2, ja:"目標を『accomplish』するとは？" }
   ];
 
-  // --- NEW: 10 Reading passages aligned to the set ---
+  // 10 Reading passages aligned to the set
   const READING = [
     { en:"Our team collaborated across departments to compile last quarter’s sales data and clarify the main reasons for the decline.", ja:"私たちのチームは部門横断で協力し、先四半期の売上データをまとめ、減少の主な理由を明確にしました。" },
     { en:"Management authorized a new policy to conserve energy after hours and maintain consistent security procedures.", ja:"経営陣は、営業時間外の省エネと一貫したセキュリティ手順の維持に関する新方針を承認しました。" },
@@ -227,8 +227,11 @@
   const QA_IMAGES = Array.from({length:20}, (_,i)=> `${i+1}.jpg`);
   const QA_AUDIOS = Array.from({length:20}, (_,i)=> `assets/A${i+1}.m4a`);
 
-  // --- state/els ---
-  let deck = []; let index = 0; let showingFront = true;
+  // ---------- STATE / ELEMENTS ----------
+  let deck = [];
+  let index = 0;
+  let showingFront = true;
+
   const els = {
     welcome: document.getElementById('welcome'),
     app: document.getElementById('app'),
@@ -259,25 +262,27 @@
     return arr;
   }
 
+  // Show/hide QA controls
   function showQAControls(show){
-  const qaButtons = [els.btnPlay, els.btnSpeed];
-  qaButtons.forEach(btn=>{
-    if(!btn) return;
-    btn.style.display = show ? 'inline-block' : 'none';
-  });
+    const qaButtons = [els.btnPlay, els.btnSpeed];
+    qaButtons.forEach(btn=>{
+      if(!btn) return;
+      btn.style.display = show ? 'inline-block' : 'none';
+    });
 
-  if(show){
-    const item = deck[index];
-    const hasAudio = item && !!item.audio;
-    els.btnPlay.disabled = !hasAudio;
-    els.btnSpeed.disabled = !hasAudio;
-  } else {
-    els.qaAudio.pause();
-    els.btnPlay.classList.remove('playing');
-    els.btnPlay.classList.add('paused');
+    if(show){
+      const item = deck[index];
+      const hasAudio = item && !!item.audio;
+      els.btnPlay.disabled = !hasAudio;
+      els.btnSpeed.disabled = !hasAudio;
+    } else {
+      els.qaAudio.pause();
+      els.btnPlay.classList.remove('playing');
+      els.btnPlay.classList.add('paused');
+    }
   }
-}
 
+  // Build deck by mode
   function buildDeck(){
     const mode = els.mode.value;
     if(mode==='vocab-j2e' || mode==='vocab-e2j'){
@@ -328,14 +333,9 @@
     index = 0; showingFront = true; render();
   }
 
-  // --- QA audio wiring ---
+  // ---------- QA AUDIO ----------
   const SPEEDS = [0.5, 0.8, 1.0];
-els.btnSpeed.addEventListener('click', ()=>{
-  speedIdx = (speedIdx+1)%SPEEDS.length;
-  els.qaAudio.playbackRate = SPEEDS[speedIdx];
-  els.btnSpeed.textContent = `${SPEEDS[speedIdx].toFixed(1)}×`;
-});
-
+  let speedIdx = 2; // default 1.0×
 
   function updateQAAudio(){
     if(els.mode.value!=='qa' || deck.length===0) return;
@@ -352,7 +352,7 @@ els.btnSpeed.addEventListener('click', ()=>{
     if(els.qaAudio.src !== abs){ els.qaAudio.src = src; }
     els.qaAudio.playbackRate = SPEEDS[speedIdx];
     if(wasPlaying){
-      els.qaAudio.play().catch(()=>{ /* ignore autoplay block */ });
+      els.qaAudio.play().catch(()=>{ /* autoplay blocked */ });
     }
   }
 
@@ -364,7 +364,7 @@ els.btnSpeed.addEventListener('click', ()=>{
     }
   }
 
-  // --- render ---
+  // ---------- RENDER ----------
   function render(){
     if(deck.length===0){
       els.main.textContent='—'; els.sub.textContent='No cards'; els.counter.textContent='0 / 0';
@@ -373,7 +373,7 @@ els.btnSpeed.addEventListener('click', ()=>{
     const item = deck[index]; const mode = els.mode.value;
     els.label.textContent = showingFront ? item.sideLabelFront : item.sideLabelBack;
 
-    // Image for QA (shows on both sides for context)
+    // Image for QA (show on both sides)
     if(item.img){
       els.pic.classList.remove('hidden');
       els.pic.src = item.img;
@@ -391,7 +391,7 @@ els.btnSpeed.addEventListener('click', ()=>{
       els.main.innerHTML = `<div class="${item.type==='reading'?'small':''}">${content}</div>`;
     }
 
-    // Quiz buttons
+    // Quiz MC buttons
     if(mode==='quiz' && item.type==='quiz4' && showingFront){
       els.sub.textContent = 'Choose the correct answer.';
       els.mcArea.classList.remove('hidden'); els.mcArea.innerHTML='';
@@ -420,71 +420,62 @@ els.btnSpeed.addEventListener('click', ()=>{
       showQAControls(false);
     }
 
-    // Counter / bar
+    // Counter / progress
     els.counter.textContent = `${index+1} / ${deck.length}`;
     const pct = ((index+1)/deck.length)*100; els.bar.style.width = `${pct}%`;
 
-    // Keep deep link updated
+    // Update deep link
     location.hash = `#${els.mode.value}:${index}`;
   }
 
-  // Navigation helpers
+  // ---------- NAV ----------
   function prev(){ index=(index-1+deck.length)%deck.length; showingFront=true; render(); }
   function next(){ index=(index+1)%deck.length; showingFront=true; render(); }
   function flip(){ if(!(els.mode.value==='quiz' && showingFront)) { showingFront=!showingFront; render(); } }
-  function shuffleDeck(){
-    deck = shuffleArr(deck);
-    index = 0; showingFront = true;
-    render();
-  }
+  function shuffleDeck(){ deck = shuffleArr(deck); index = 0; showingFront = true; render(); }
 
-  // Deep link (optional resume)
-  function readHash(){
-    const h = location.hash.replace('#',''); if(!h){ buildDeck(); return; }
-    const [m,i] = h.split(':');
-    if(m && [...els.mode.options].some(o=>o.value===m)) els.mode.value = m;
-    buildDeck();
-    if(i && !Number.isNaN(+i)) index = Math.max(0,Math.min(deck.length-1,+i));
-    render();
-  }
-
-  // ---------- START APP ----------
+  // ---------- STARTUP ----------
   function startApp(){
     try{
-      // Force initial mode + first card
-      if(els.mode) els.mode.value = 'vocab-j2e';
-      index = 0; showingFront = true;
+      // Honor deep link mode if present; otherwise default to QA
+      const h = location.hash.replace('#','');
+      const askMode = h && h.split(':')[0];
+      if(els.mode) els.mode.value = (askMode && [...els.mode.options].some(o=>o.value===askMode)) ? askMode : 'qa';
 
+      index = 0; showingFront = true;
       buildDeck();
 
-      // Show app UI
+      // Show UI
       els.app.classList.remove('hidden');
       els.app.removeAttribute('aria-hidden');
 
-      // Hard-hide the welcome overlay
+      // Hide welcome overlay
       els.welcome.classList.add('hidden');
       els.welcome.setAttribute('aria-hidden','true');
       els.welcome.style.display = 'none';
       els.welcome.style.visibility = 'hidden';
       els.welcome.style.pointerEvents = 'none';
 
-      // Lock URL to first mode/card
-      location.hash = '#vocab-j2e:0';
+      // Lock URL to current mode/index
+      location.hash = `#${els.mode.value}:0`;
     }catch(err){
       console.error('startApp error:', err);
       els.app.classList.remove('hidden');
       els.welcome.classList.add('hidden'); els.welcome.style.display='none';
-      if(els.mode) els.mode.value = 'vocab-j2e';
-      index = 0; buildDeck(); location.hash = '#vocab-j2e:0';
+      if(els.mode) els.mode.value = 'qa';
+      index = 0; buildDeck(); location.hash = '#qa:0';
     }
   }
   window.startApp = startApp;
 
-  // ---------- Bindings ----------
+  // ---------- BINDINGS ----------
   document.addEventListener('DOMContentLoaded', ()=>{
-    // Start button
+    // Start button (still usable)
     const startBtn = document.getElementById('startBtn');
     if(startBtn){ startBtn.addEventListener('click', (e)=>{ e.preventDefault(); startApp(); }); }
+
+    // Autostart so you’re never stuck at 0/0
+    startApp();
 
     // Controls
     els.btnPrev.addEventListener('click', (e)=>{ e.preventDefault(); prev(); });
@@ -501,10 +492,7 @@ els.btnSpeed.addEventListener('click', ()=>{
       if(e.key==='ArrowRight'){ next(); }
     });
 
-    // QA audio
-    // Audio path mapping (already correct for your folder)
-const QA_IMAGES = Array.from({length:20}, (_,i)=> `${i+1}.jpg`);
-const QA_AUDIOS = Array.from({length:20}, (_,i)=> `assets/A${i+1}.m4a`);
+    // QA audio controls
     els.btnPlay.addEventListener('click', ()=>{
       if(els.qaAudio.paused){
         els.qaAudio.play().catch(()=>{ /* autoplay blocked: user can press again */ });
@@ -521,8 +509,6 @@ const QA_AUDIOS = Array.from({length:20}, (_,i)=> `assets/A${i+1}.m4a`);
     els.qaAudio.addEventListener('play', setPlayButtonState);
     els.qaAudio.addEventListener('pause', setPlayButtonState);
     els.qaAudio.addEventListener('ended', setPlayButtonState);
-
-    // Don’t auto-build until Start is pressed
   });
 </script>
 </body>
