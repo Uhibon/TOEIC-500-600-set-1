@@ -69,19 +69,21 @@
       -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
     .label{color:var(--muted);font-size:13px;letter-spacing:.3px;margin-bottom:8px;
       background:rgba(255,255,255,0.7);padding:4px 8px;border-radius:8px}
-    /* Picture block – scales to fit card */
+
+    /* --- Picture: never crop --- */
     .picture{
       display:block;
-      width:min(92%, 820px);
-      max-height:48vh;        /* keep footer visible on small screens */
-      aspect-ratio:16/9;
-      object-fit:cover;
+      width:min(96%, 860px);   /* wide but within card */
+      max-height:52vh;         /* visible with footer */
+      height:auto;
+      object-fit:contain;      /* don't crop */
       border-radius:16px;
       border:1px solid #ddd;
       box-shadow:0 6px 18px rgba(0,0,0,.15);
       background:#fff;
       margin:6px auto 12px;
     }
+
     .main{font-size:28px;line-height:1.25;font-weight:800;margin:8px 0 10px;
       background:rgba(255,255,255,0.86);padding:8px 12px;border-radius:12px}
     .sub{font-size:18px;opacity:.92;margin:0 0 6px;background:rgba(255,255,255,0.65);
@@ -116,6 +118,7 @@
     .playBtn.paused::after{content:' ▶︎';}
     .playBtn.playing::after{content:' Ⅱ';}
     .speedBtn{min-width:74px;text-align:center}
+    .disabled{opacity:.5; pointer-events:none;}
   </style>
 </head>
 <body>
@@ -167,7 +170,7 @@
     </div>
 
     <!-- Hidden audio element for QA -->
-    <audio id="qaAudio" preload="metadata"></audio>
+    <audio id="qaAudio" preload="metadata" playsinline></audio>
   </div>
 
   <script>
@@ -271,7 +274,7 @@
 
     // 1.jpg..20.jpg and assets/A1.m4a..A20.m4a
     const QA_IMAGES = Array.from({length:20}, (_,i)=> `${i+1}.jpg`);
-    const QA_AUDIOS = Array.from({length:20}, (_,i)=> `assets/A${i+1}.m4a`);
+    const QA_AUDIOS = Array.from({length:20}, (_,i)=> `./assets/A${i+1}.m4a`); // explicit ./
 
     // -------------- State --------------
     let deck = [];
@@ -356,7 +359,7 @@
       index = 0; showingFront = true; render();
     }
 
-    // QA Audio handling
+    // --- QA Audio handling ---
     const SPEEDS = [0.5, 0.8, 1.0];
     let speedIdx = 2; // 1.0x
 
@@ -364,20 +367,41 @@
       if(els.mode.value!=='qa' || deck.length===0) return;
       const item = deck[index];
       const src = item.audio;
+
+      // Reset UI state each time
+      els.btnPlay.classList.add('disabled');
+      els.btnPlay.title = 'Loading audio…';
+
       if(src){
         const wasPlaying = !els.qaAudio.paused && !els.qaAudio.ended;
         els.qaAudio.src = src;
         els.qaAudio.playbackRate = SPEEDS[speedIdx];
-        if(wasPlaying){
-          els.qaAudio.play().catch(()=>{});
-        }
+        els.qaAudio.load();
+        // When audio is ready, enable play
+        const onCanPlay = ()=>{
+          els.btnPlay.classList.remove('disabled');
+          els.btnPlay.title = 'Play/Pause (QA audio)';
+          if(wasPlaying){ els.qaAudio.play().catch(()=>{}); }
+          setPlayButtonState();
+        };
+        const onError = ()=>{
+          els.btnPlay.classList.add('disabled');
+          els.btnPlay.title = 'No audio found (check assets/A#.m4a)';
+          els.qaAudio.removeAttribute('src');
+          setPlayButtonState();
+        };
+        els.qaAudio.oncanplay = onCanPlay;
+        els.qaAudio.onerror = onError;
       } else {
         els.qaAudio.removeAttribute('src');
+        els.btnPlay.classList.add('disabled');
+        els.btnPlay.title = 'No audio for this card';
+        setPlayButtonState();
       }
     }
 
     function setPlayButtonState(){
-      if(els.qaAudio.paused) { els.btnPlay.classList.remove('playing'); els.btnPlay.classList.add('paused'); }
+      if(els.qaAudio && els.qaAudio.paused) { els.btnPlay.classList.remove('playing'); els.btnPlay.classList.add('paused'); }
       else { els.btnPlay.classList.remove('paused'); els.btnPlay.classList.add('playing'); }
     }
 
@@ -390,9 +414,13 @@
       const mode = els.mode.value;
       els.label.textContent = showingFront ? item.sideLabelFront : item.sideLabelBack;
 
-      // Picture (QA only)
-      if(item.img){ els.pic.classList.remove('hidden'); els.pic.src = item.img; els.pic.alt = item.sideLabelFront || 'illustration'; }
-      else { els.pic.classList.add('hidden'); els.pic.removeAttribute('src'); }
+      // Picture (QA only). If missing, hide instead of broken image.
+      if(mode==='qa' && item.img){
+        els.pic.onload = ()=>{ els.pic.classList.remove('hidden'); };
+        els.pic.onerror = ()=>{ els.pic.classList.add('hidden'); els.pic.removeAttribute('src'); };
+        els.pic.src = item.img;
+        els.pic.alt = item.sideLabelFront || 'illustration';
+      } else { els.pic.classList.add('hidden'); els.pic.removeAttribute('src'); }
 
       // Text
       const content = showingFront ? item.front : item.back;
@@ -467,10 +495,14 @@
     document.getElementById('btnShuffle').addEventListener('click', shuffleDeck);
 
     // QA play/pause & speed
-    els.btnPlay.addEventListener('click', (e)=>{
+    els.btnPlay.addEventListener('click', async (e)=>{
       e.preventDefault();
-      if(els.qaAudio.paused){ els.qaAudio.play().then(()=> setPlayButtonState()).catch(()=>{}); }
-      else { els.qaAudio.pause(); setPlayButtonState(); }
+      if(els.btnPlay.classList.contains('disabled')) return;
+      try{
+        if(els.qaAudio.paused){ await els.qaAudio.play(); }
+        else { els.qaAudio.pause(); }
+      }catch(err){ /* ignored (iOS autoplay rules) */ }
+      setPlayButtonState();
     });
     els.btnSpeed.addEventListener('click', (e)=>{
       e.preventDefault();
