@@ -38,8 +38,7 @@
     .footer{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;margin-top:8px;color:var(--muted);font-size:13px;background:rgba(255,255,255,.85);padding:8px 12px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
     .progress{height:8px;border-radius:999px;background:#eee;overflow:hidden}
     .progress>span{display:block;height:100%;background:linear-gradient(90deg,#7dd3fc,#60a5fa,#a78bfa,#f472b6);width:0%}
-    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-    @media (max-width:700px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));}.main{font-size:24px}}
+    @media (max-width:700px){.main{font-size:24px}}
     a{color:#0b78ff;text-decoration:none}
     .hidden{display:none}
     .options{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:12px}
@@ -47,6 +46,8 @@
     .optbtn.ok{background:#dcfce7;border-color:#86efac;color:#166534}
     .optbtn.bad{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
     .small{font-size:15px;line-height:1.45}
+
+    /* QA-only controls */
     .qaOnly{display:none}
     .playBtn{background:#ef4444;color:#fff;border-color:#dc2626;font-weight:800}
     .playBtn.paused::after{content:' ▶︎'}
@@ -129,7 +130,7 @@
   // --- helper ---
   function svg(label, emoji){
     const base = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 675'>
-      <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+      <defs><linearGradient id='g' x1='0' y='0' x2='1' y2='1'>
         <stop offset='0%' stop-color='#eaf3ff'/><stop offset='100%' stop-color='#f7e9ff'/></linearGradient></defs>
       <rect width='1200' height='675' fill='url(#g)'/>
       <rect x='60' y='60' width='1080' height='555' rx='28' fill='white' stroke='#d7d7d7'/>
@@ -224,6 +225,10 @@
 
   const READING = [{ en:"Reading passage coming soon…", ja:"準備中…" }];
 
+  /* QA media paths (your repo structure)
+     Images: ./1.jpg ... ./20.jpg
+     Audio:  ./assets/A1.m4a ... ./assets/A20.m4a
+  */
   const QA_IMAGES = Array.from({length:20}, (_,i)=> `${i+1}.jpg`);
   const QA_AUDIOS = Array.from({length:20}, (_,i)=> `assets/A${i+1}.m4a`);
 
@@ -260,7 +265,11 @@
       els.btnPlay.disabled = !hasAudio;
       els.btnSpeed.disabled = !hasAudio;
     }
-    if(!show){ els.qaAudio.pause(); els.btnPlay.classList.remove('playing'); els.btnPlay.classList.add('paused'); }
+    if(!show){
+      els.qaAudio.pause();
+      els.btnPlay.classList.remove('playing');
+      els.btnPlay.classList.add('paused');
+    }
   }
 
   function buildDeck(){
@@ -276,7 +285,15 @@
     } else if(mode==='sentences'){
       deck = SENTENCES.map(s=>({ type:'sentence', front:s.ja, back:s.en+'\n'+s.ja, sideLabelFront:'Japanese sentence', sideLabelBack:'Answer (EN + JA)' }));
     } else if(mode==='qa'){
-      deck = QA.map((q,i)=>({ type:'qa', front:q.q_ja||q.q_en, back:(q.a_en||'')+(q.a_ja?'\n'+q.a_ja:''), sideLabelFront:(q.q_ja?'Question (JA)':'Question (EN)'), sideLabelBack:'Answer (EN + JA)', img:QA_IMAGES[i]||null, audio:QA_AUDIOS[i]||null }));
+      deck = QA.map((q,i)=>({
+        type:'qa',
+        front:q.q_ja||q.q_en,
+        back:(q.a_en||'')+(q.a_ja?'\n'+q.a_ja:''), 
+        sideLabelFront:(q.q_ja?'Question (JA)':'Question (EN)'),
+        sideLabelBack:'Answer (EN + JA)',
+        img: QA_IMAGES[i] || null,
+        audio: QA_AUDIOS[i] || null
+      }));
     } else if(mode==='quiz'){
       deck = QUIZ.map(q=>({ type:'quiz4', front:q.q, back:(q.ja?q.ja+'\n':'')+'Answer: '+q.options[q.answer], options:q.options, answer:q.answer, sideLabelFront:'Choose the best answer', sideLabelBack:'Explanation' }));
     } else if(mode==='reading'){
@@ -286,26 +303,47 @@
   }
 
   const SPEEDS = [0.5, 0.8, 1.0]; let speedIdx = 2;
+
   function updateQAAudio(){
     if(els.mode.value!=='qa' || deck.length===0) return;
     const item = deck[index]; const src = item.audio;
-    if(!src){ els.qaAudio.removeAttribute('src'); els.btnPlay.disabled = true; els.btnSpeed.disabled = true; return; }
+    if(!src){
+      els.qaAudio.removeAttribute('src');
+      els.btnPlay.disabled = true; els.btnSpeed.disabled = true;
+      return;
+    }
     els.btnPlay.disabled = false; els.btnSpeed.disabled = false;
-    const wasPlaying = !els.qaAudio.paused && !els.qaAudio.ended;
+
     const abs = (new URL(src, location.href)).href;
     if(els.qaAudio.src !== abs){ els.qaAudio.src = src; }
+
     els.qaAudio.playbackRate = SPEEDS[speedIdx];
-    if(wasPlaying){ els.qaAudio.play().catch(()=>{}); }
+    els.qaAudio.currentTime = 0;           // start from beginning on card change
+    els.qaAudio.pause();                    // default paused until user hits Play
+    setPlayButtonState();
   }
-  function setPlayButtonState(){ if(els.qaAudio.paused){ els.btnPlay.classList.remove('playing'); els.btnPlay.classList.add('paused'); } else { els.btnPlay.classList.remove('paused'); els.btnPlay.classList.add('playing'); } }
+
+  function setPlayButtonState(){
+    if(els.qaAudio.paused){ els.btnPlay.classList.remove('playing'); els.btnPlay.classList.add('paused'); }
+    else { els.btnPlay.classList.remove('paused'); els.btnPlay.classList.add('playing'); }
+  }
 
   function render(){
-    if(deck.length===0){ els.main.textContent='—'; els.sub.textContent='No cards'; els.counter.textContent='0 / 0'; showQAControls(false); return; }
+    if(deck.length===0){
+      els.main.textContent='—'; els.sub.textContent='No cards';
+      els.counter.textContent='0 / 0'; showQAControls(false); return;
+    }
     const item = deck[index]; const mode = els.mode.value;
-    document.getElementById('label').textContent = showingFront ? item.sideLabelFront : item.sideLabelBack;
+    els.label.textContent = showingFront ? item.sideLabelFront : item.sideLabelBack;
 
-    if(item.img){ els.pic.classList.remove('hidden'); els.pic.src = item.img; els.pic.alt = item.sideLabelFront||'illustration'; els.pic.onerror = ()=>{ els.pic.classList.add('hidden'); }; }
-    else{ els.pic.classList.add('hidden'); els.pic.removeAttribute('src'); }
+    if(item.img){
+      els.pic.classList.remove('hidden');
+      els.pic.src = item.img;
+      els.pic.alt = item.sideLabelFront||'illustration';
+      els.pic.onerror = ()=>{ els.pic.classList.add('hidden'); };
+    } else {
+      els.pic.classList.add('hidden'); els.pic.removeAttribute('src');
+    }
 
     const content = showingFront ? item.front : item.back;
     if((!showingFront) && (item.type==='qa'||item.type==='sentence'||item.type==='reading') && content.includes('\n')){
@@ -317,8 +355,14 @@
 
     if(mode==='quiz' && item.type==='quiz4' && showingFront){
       els.sub.textContent = 'Choose the correct answer.'; els.mcArea.classList.remove('hidden'); els.mcArea.innerHTML='';
-      item.options.forEach((opt,i)=>{ const b=document.createElement('button'); b.className='optbtn'; b.textContent=opt;
-        b.addEventListener('click',(e)=>{ e.preventDefault(); e.stopPropagation(); if(i!==item.answer){ b.classList.add('bad'); b.disabled=true; return; } b.classList.add('ok'); [...els.mcArea.querySelectorAll('button')].forEach(x=>x.disabled=true); setTimeout(()=>{ showingFront=false; render(); },250); }, {passive:false});
+      item.options.forEach((opt,i)=>{
+        const b=document.createElement('button'); b.className='optbtn'; b.textContent=opt;
+        b.addEventListener('click',(e)=>{
+          e.preventDefault(); e.stopPropagation();
+          if(i!==item.answer){ b.classList.add('bad'); b.disabled=true; return; }
+          b.classList.add('ok'); [...els.mcArea.querySelectorAll('button')].forEach(x=>x.disabled=true);
+          setTimeout(()=>{ showingFront=false; render(); },250);
+        }, {passive:false});
         els.mcArea.appendChild(b);
       });
     } else {
@@ -328,8 +372,8 @@
 
     if(mode==='qa'){
       showQAControls(true);
-      document.getElementById('btnSpeed').textContent = `${SPEEDS[speedIdx].toFixed(1)}×`;
-      updateQAAudio(); setPlayButtonState();
+      els.btnSpeed.textContent = `${SPEEDS[speedIdx].toFixed(1)}×`;
+      updateQAAudio();
     } else {
       showQAControls(false);
     }
@@ -339,61 +383,34 @@
     location.hash = `#${els.mode.value}:${index}`;
   }
 
-  function prev(){ index=(index-1+deck.length)%deck.length; showingFront=true; render(); }
-  function next(){ index=(index+1)%deck.length; showingFront=true; render(); }
-  function flip(){ if(!(els.mode.value==='quiz' && showingFront)) { showingFront=!showingFront; render(); } }
-  function shuffleDeck(){ deck=shuffleArr(deck); index=0; showingFront=true; render(); }
+  function pauseAudioIfPlaying(){ if(!els.qaAudio.paused){ els.qaAudio.pause(); setPlayButtonState(); } }
 
-  function readHash(){
-    const h = location.hash.replace('#',''); if(!h){ buildDeck(); return; }
-    const [m,i] = h.split(':'); if(m && [...els.mode.options].some(o=>o.value===m)) els.mode.value = m;
-    buildDeck(); if(i && !Number.isNaN(+i)) index = Math.max(0,Math.min(deck.length-1,+i)); render();
+  function prev(){ index=(index-1+deck.length)%deck.length; showingFront=true; pauseAudioIfPlaying(); render(); }
+  function next(){ index=(index+1)%deck.length; showingFront=true; pauseAudioIfPlaying(); render(); }
+  function flip(){ 
+    if(els.mode.value==='quiz' && showingFront) return;
+    showingFront=!showingFront; 
+    // keep audio paused while viewing answer
+    if(els.mode.value==='qa') pauseAudioIfPlaying();
+    render();
   }
+  function shuffleDeck(){ deck=shuffleArr(deck); index=0; showingFront=true; pauseAudioIfPlaying(); render(); }
 
-  // ---------- START APP (fixed & forced to vocab-j2e:0) ----------
+  // ---------- START APP ----------
   function startApp(){
-    try{
-      // Force initial mode + first card
-      if(els.mode) els.mode.value = 'vocab-j2e';
-      index = 0; showingFront = true;
-
-      // Build first deck
-      buildDeck();
-
-      // Show app UI
-      if(els.app){
-        els.app.classList.remove('hidden');
-        els.app.removeAttribute('aria-hidden');
-      }
-
-      // Hard-hide the welcome overlay (class + inline styles for safety)
-      if(els.welcome){
-        els.welcome.classList.add('hidden');
-        els.welcome.setAttribute('aria-hidden','true');
-        els.welcome.style.display = 'none';
-        els.welcome.style.visibility = 'hidden';
-        els.welcome.style.pointerEvents = 'none';
-      }
-
-      // Lock URL to first mode/card
-      location.hash = '#vocab-j2e:0';
-    }catch(err){
-      console.error('startApp error:', err);
-      if(els.app) els.app.classList.remove('hidden');
-      if(els.welcome){
-        els.welcome.classList.add('hidden');
-        els.welcome.style.display = 'none';
-      }
-      if(els.mode) els.mode.value = 'vocab-j2e';
-      index = 0; buildDeck();
-      location.hash = '#vocab-j2e:0';
-    }
+    if(els.mode) els.mode.value = 'qa'; // jump straight to Questions if you want; change to 'vocab-j2e' to start with vocab
+    index = 0; showingFront = true;
+    buildDeck();
+    els.app.classList.remove('hidden'); els.app.removeAttribute('aria-hidden');
+    els.welcome.classList.add('hidden'); els.welcome.setAttribute('aria-hidden','true');
+    els.welcome.style.display='none'; els.welcome.style.visibility='hidden'; els.welcome.style.pointerEvents='none';
+    location.hash = `#${els.mode.value}:0`;
   }
   window.startApp = startApp;
 
   // ---------- Bindings ----------
   document.addEventListener('DOMContentLoaded', ()=>{
-    // Start button
+    // Start
     const startBtn = document.getElementById('startBtn');
     if(startBtn){ startBtn.addEventListener('click', (e)=>{ e.preventDefault(); startApp(); }); }
 
@@ -402,7 +419,7 @@
     els.btnNext.addEventListener('click', (e)=>{ e.preventDefault(); next(); });
     els.btnFlip.addEventListener('click', (e)=>{ e.preventDefault(); flip(); });
     els.btnShuffle.addEventListener('click', (e)=>{ e.preventDefault(); shuffleDeck(); });
-    els.mode.addEventListener('change', ()=>{ buildDeck(); });
+    els.mode.addEventListener('change', ()=>{ pauseAudioIfPlaying(); buildDeck(); });
 
     // Card interactions
     els.card.addEventListener('click', ()=> flip());
@@ -412,8 +429,9 @@
       if(e.key==='ArrowRight'){ next(); }
     });
 
-    // QA audio
+    // QA audio handlers
     els.btnPlay.addEventListener('click', ()=>{
+      // user gesture -> safe to play
       if(els.qaAudio.paused){ els.qaAudio.play().catch(()=>{}); }
       else { els.qaAudio.pause(); }
       setPlayButtonState();
@@ -426,10 +444,6 @@
     els.qaAudio.addEventListener('play', setPlayButtonState);
     els.qaAudio.addEventListener('pause', setPlayButtonState);
     els.qaAudio.addEventListener('ended', setPlayButtonState);
-
-    // Don’t auto-build deck until the user presses Start (overlay is up)
-    // If you want to enable deep link resumes, you can call readHash() here
-    // once you detect no welcome overlay; for now we let Start control it.
   });
 </script>
 </body>
