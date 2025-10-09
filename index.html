@@ -2,22 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>TOEIC (500-600) set-1 – Boo-riculum</title>
   <link rel="icon" type="image/png" href="booha-ghost.png">
   <style>
     :root { --ink:#222; --muted:#444; --accent:#0b78ff; --ok:#22c55e; --bad:#ef4444; }
-    html,body{height:100%;}
+    html,body{height:100%; margin:0;}
     body{
-      margin:0;
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif;
       color:var(--ink);
       background:url('Booha card.jpg') center/cover fixed no-repeat;
+      overflow:hidden; /* prevent page scroll/cut-off */
     }
-    .wrap{max-width:900px;margin:0 auto;padding:16px 16px 24px;}
+    /* Full-height app frame */
+    .wrap{
+      height:100%;
+      max-width:900px;
+      margin:0 auto;
+      padding: max(10px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+               max(10px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      box-sizing:border-box;
+    }
     header{
       display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;
-      margin-bottom:12px;background:rgba(255,255,255,0.88);padding:12px 16px;
+      background:rgba(255,255,255,0.88);padding:12px 16px;
       border-radius:16px;box-shadow:0 4px 10px rgba(0,0,0,0.15)
     }
     header h1{
@@ -37,11 +48,16 @@
     button:hover{background:#f0f0f0}
     button:active{transform:scale(.98)}
     .pill{border:1px solid #ccc;border-radius:999px;padding:6px 10px;font-size:12px;background:rgba(255,255,255,0.7)}
+    /* Card auto-fits between header and footer */
     .card{
-      user-select:none;-webkit-user-select:none;display:flex;flex-direction:column;justify-content:center;align-items:center;
+      flex:1 1 auto;
+      min-height:0; /* allow flex shrink */
+      user-select:none;-webkit-user-select:none;
+      display:flex;flex-direction:column;justify-content:center;align-items:center;
       text-align:center;background:url('Booha card.jpg') center/cover no-repeat;
-      border:1px solid #ccc;border-radius:24px;min-height:56vh;margin:16px auto;padding:22px 18px 28px;
+      border:1px solid #ccc;border-radius:24px;padding:16px 16px 20px;margin:0;
       box-shadow:0 10px 40px rgba(0,0,0,.25); position:relative;
+      overflow:hidden;
     }
     .brand{
       position:absolute;top:10px;left:12px;display:flex;gap:8px;align-items:center;
@@ -53,11 +69,11 @@
       -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
     .label{color:var(--muted);font-size:13px;letter-spacing:.3px;margin-bottom:8px;
       background:rgba(255,255,255,0.7);padding:4px 8px;border-radius:8px}
-    /* Picture block */
+    /* Picture block – scales to fit card */
     .picture{
       display:block;
-      max-width:88%;
-      width:clamp(260px,88%,760px);
+      width:min(92%, 820px);
+      max-height:48vh;        /* keep footer visible on small screens */
       aspect-ratio:16/9;
       object-fit:cover;
       border-radius:16px;
@@ -75,13 +91,17 @@
     .muted{color:var(--muted)}
     .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center}
     .footer{
+      flex:0 0 auto;
       display:flex;align-items:center;justify-content:space-between;margin-top:8px;color:var(--muted);font-size:13px;
       background:rgba(255,255,255,0.85);padding:8px 12px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1)
     }
     .progress{height:8px;border-radius:999px;background:#eee;overflow:hidden}
     .progress>span{display:block;height:100%;background:linear-gradient(90deg,#7dd3fc,#60a5fa,#a78bfa,#f472b6);width:0%}
     .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-    @media (max-width:700px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));} .main{font-size:24px}}
+    @media (max-width:700px){
+      .grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+      .main{font-size:24px}
+    }
     a{color:#0b78ff;text-decoration:none}
     .hidden{display:none}
     .options{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:12px}
@@ -92,10 +112,7 @@
 
     /* QA audio controls */
     .qaOnly{display:none}
-    .playBtn{
-      background:#ef4444;color:#fff;border-color:#dc2626;
-      font-weight:800;
-    }
+    .playBtn{ background:#ef4444;color:#fff;border-color:#dc2626;font-weight:800; }
     .playBtn.paused::after{content:' ▶︎';}
     .playBtn.playing::after{content:' Ⅱ';}
     .speedBtn{min-width:74px;text-align:center}
@@ -110,7 +127,7 @@
           <option value="vocab-j2e">Vocab: 🇯🇵 → 🇺🇸</option>
           <option value="vocab-e2j">Vocab: 🇺🇸 → 🇯🇵</option>
           <option value="sentences">Sentences (practice)</option>
-          <option value="qa">Questions (practice)</option>
+          <option value="qa" selected>Questions (practice)</option>
           <option value="quiz">Quiz (multiple choice)</option>
           <option value="reading">Reading</option>
         </select>
@@ -154,15 +171,11 @@
   </div>
 
   <script>
-    // ---------- Tiny helper to make on-brand "stock-style" SVGs ----------
+    // ---------- Tiny helper (kept) ----------
     function svg(label, emoji){
       const base = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 675'>
-        <defs>
-          <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
-            <stop offset='0%' stop-color='#eaf3ff'/>
-            <stop offset='100%' stop-color='#f7e9ff'/>
-          </linearGradient>
-        </defs>
+        <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+          <stop offset='0%' stop-color='#eaf3ff'/><stop offset='100%' stop-color='#f7e9ff'/></linearGradient></defs>
         <rect width='1200' height='675' fill='url(#g)'/>
         <rect x='60' y='60' width='1080' height='555' rx='28' fill='white' stroke='#d7d7d7'/>
         <text x='600' y='320' font-size='144' text-anchor='middle' dominant-baseline='central'>${emoji||'💼'}</text>
@@ -171,28 +184,18 @@
       return 'data:image/svg+xml;utf8,' + base.replace(/\n/g,'');
     }
 
-    // ---------------- Data (500-600 Set 1) ----------------
+    // ---------------- Data ----------------
     const VOCAB = [
-      { en:"accomplish", ja:"達成する" },
-      { en:"allocate", ja:"割り当てる" },
-      { en:"approximately", ja:"およそ／約" },
-      { en:"assemble", ja:"組み立てる；集める" },
-      { en:"assume", ja:"仮定する；引き受ける" },
-      { en:"authorize", ja:"承認する；認可する" },
-      { en:"capacity", ja:"能力；収容能力" },
-      { en:"cautious", ja:"用心深い；慎重な" },
-      { en:"clarify", ja:"明確にする" },
-      { en:"collaborate", ja:"協力する；共同で行う" },
-      { en:"compile", ja:"まとめる；編集する" },
-      { en:"confirm", ja:"確認する" },
-      { en:"conserve", ja:"節約する；保存する" },
-      { en:"consistent", ja:"一貫した；矛盾のない" },
-      { en:"decline", ja:"断る；減少する" },
-      { en:"encourage", ja:"励ます；促す" },
-      { en:"evaluate", ja:"評価する" },
-      { en:"implement", ja:"実行する；実施する" },
-      { en:"maintain", ja:"維持する；主張する" },
-      { en:"suspend", ja:"一時停止する；保留にする" }
+      { en:"accomplish", ja:"達成する" }, { en:"allocate", ja:"割り当てる" },
+      { en:"approximately", ja:"およそ／約" }, { en:"assemble", ja:"組み立てる；集める" },
+      { en:"assume", ja:"仮定する；引き受ける" }, { en:"authorize", ja:"承認する；認可する" },
+      { en:"capacity", ja:"能力；収容能力" }, { en:"cautious", ja:"用心深い；慎重な" },
+      { en:"clarify", ja:"明確にする" }, { en:"collaborate", ja:"協力する；共同で行う" },
+      { en:"compile", ja:"まとめる；編集する" }, { en:"confirm", ja:"確認する" },
+      { en:"conserve", ja:"節約する；保存する" }, { en:"consistent", ja:"一貫した；矛盾のない" },
+      { en:"decline", ja:"断る；減少する" }, { en:"encourage", ja:"励ます；促す" },
+      { en:"evaluate", ja:"評価する" }, { en:"implement", ja:"実行する；実施する" },
+      { en:"maintain", ja:"維持する；主張する" }, { en:"suspend", ja:"一時停止する；保留にする" }
     ];
 
     const SENTENCES = [
@@ -241,7 +244,6 @@
       { q_en:"What happens when teams fail to collaborate?", a_en:"Work is duplicated and deadlines are missed.", q_ja:"協力できないと何が起きる？", a_ja:"作業の重複や締切遅延が起きる。" }
     ];
 
-    // Quiz data (unchanged)
     const QUIZ = [
       { q:"'Allocate' is closest in meaning to:", options:["distribute","repair","delay","dismiss"], answer:0, ja:"『allocate』に最も近い意味は？" },
       { q:"'Approximately' means:", options:["exactly","about","rarely","equally"], answer:1, ja:"『approximately』の意味は？" },
@@ -265,15 +267,13 @@
       { q:"To 'accomplish' a goal is to:", options:["begin it","delay it","achieve it","question it"], answer:2, ja:"目標を『accomplish』するとは？" }
     ];
 
-    // Simple placeholder so "reading" mode doesn't error even if you haven't filled it yet.
     const READING = [{ en:"Reading passage coming soon…", ja:"準備中…" }];
 
-    // ------------- QA media mappings -------------
-    // 1.jpg..20.jpg and A1.m4a..A20.m4a
+    // 1.jpg..20.jpg and assets/A1.m4a..A20.m4a
     const QA_IMAGES = Array.from({length:20}, (_,i)=> `${i+1}.jpg`);
-    const QA_AUDIOS = Array.from({length:20}, (_,i)=> `A${i+1}.m4a`);
+    const QA_AUDIOS = Array.from({length:20}, (_,i)=> `assets/A${i+1}.m4a`);
 
-    // -------------- State & Elements --------------
+    // -------------- State --------------
     let deck = [];
     let index = 0;
     let showingFront = true;
@@ -293,26 +293,19 @@
       btnShuffle: document.getElementById('btnShuffle'),
       mcArea: document.getElementById('mcArea'),
       pic: document.getElementById('pic'),
-      // QA audio bits
+      // QA audio
       btnPlay: document.getElementById('btnPlay'),
       btnSpeed: document.getElementById('btnSpeed'),
       qaAudio: document.getElementById('qaAudio'),
     };
 
-    // -------------- Helpers --------------
     function shuffle(arr){ for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]]} return arr; }
     function showQAControls(show){
-      document.querySelectorAll('.qaOnly').forEach(el=>{
-        el.style.display = show ? '' : 'none';
-      });
-      if(!show){
-        els.qaAudio.pause();
-        els.btnPlay.classList.remove('playing');
-        els.btnPlay.classList.add('paused');
-      }
+      document.querySelectorAll('.qaOnly').forEach(el=>{ el.style.display = show ? '' : 'none'; });
+      if(!show){ els.qaAudio.pause(); els.btnPlay.classList.remove('playing'); els.btnPlay.classList.add('paused'); }
     }
 
-    // -------------- Build Decks --------------
+    // Build decks
     function buildDeck(){
       const mode = els.mode.value;
       if(mode==='vocab-j2e' || mode==='vocab-e2j'){
@@ -363,20 +356,20 @@
       index = 0; showingFront = true; render();
     }
 
-    // -------------- QA Audio handling --------------
+    // QA Audio handling
     const SPEEDS = [0.5, 0.8, 1.0];
-    let speedIdx = 2; // default 1.0x
+    let speedIdx = 2; // 1.0x
 
     function updateQAAudio(){
       if(els.mode.value!=='qa' || deck.length===0) return;
       const item = deck[index];
       const src = item.audio;
       if(src){
-        const wasPlaying = !els.qaAudio.paused;
+        const wasPlaying = !els.qaAudio.paused && !els.qaAudio.ended;
         els.qaAudio.src = src;
         els.qaAudio.playbackRate = SPEEDS[speedIdx];
         if(wasPlaying){
-          els.qaAudio.play().catch(()=>{ /* ignore autoplay block */ });
+          els.qaAudio.play().catch(()=>{});
         }
       } else {
         els.qaAudio.removeAttribute('src');
@@ -384,39 +377,24 @@
     }
 
     function setPlayButtonState(){
-      if(els.qaAudio.paused){
-        els.btnPlay.classList.remove('playing');
-        els.btnPlay.classList.add('paused');
-      } else {
-        els.btnPlay.classList.remove('paused');
-        els.btnPlay.classList.add('playing');
-      }
+      if(els.qaAudio.paused) { els.btnPlay.classList.remove('playing'); els.btnPlay.classList.add('paused'); }
+      else { els.btnPlay.classList.remove('paused'); els.btnPlay.classList.add('playing'); }
     }
 
-    // -------------- Render --------------
+    // Render
     function render(){
-      if(deck.length===0){ 
-        els.main.textContent='—'; 
-        els.sub.textContent='No cards'; 
-        els.counter.textContent='0 / 0'; 
-        showQAControls(false);
-        return; 
+      if(deck.length===0){
+        els.main.textContent='—'; els.sub.textContent='No cards'; els.counter.textContent='0 / 0'; showQAControls(false); return;
       }
       const item = deck[index];
       const mode = els.mode.value;
       els.label.textContent = showingFront ? item.sideLabelFront : item.sideLabelBack;
 
-      // Picture logic: show for items with img (QA), hide otherwise
-      if(item.img){
-        els.pic.classList.remove('hidden');
-        els.pic.src = item.img;
-        els.pic.alt = (item.sideLabelFront || 'illustration');
-      } else {
-        els.pic.classList.add('hidden');
-        els.pic.removeAttribute('src');
-      }
+      // Picture (QA only)
+      if(item.img){ els.pic.classList.remove('hidden'); els.pic.src = item.img; els.pic.alt = item.sideLabelFront || 'illustration'; }
+      else { els.pic.classList.add('hidden'); els.pic.removeAttribute('src'); }
 
-      // Main text & sub-lines
+      // Text
       const content = showingFront ? item.front : item.back;
       if((!showingFront) && (item.type==='qa' || item.type==='sentence' || item.type==='reading') && content.includes('\n')){
         const [line1, line2] = content.split('\n');
@@ -426,36 +404,27 @@
         els.main.innerHTML = `<div class="${item.type==='reading'?'small':''}">${content}</div>`;
       }
 
-      // QUIZ 4-choice behavior
+      // Quiz front behavior
       if(mode==='quiz' && item.type==='quiz4' && showingFront){
         els.sub.textContent = 'Choose the correct answer.';
-        els.mcArea.classList.remove('hidden');
-        els.mcArea.innerHTML = '';
+        els.mcArea.classList.remove('hidden'); els.mcArea.innerHTML = '';
         item.options.forEach((opt, i)=>{
           const btn = document.createElement('button');
-          btn.className = 'optbtn';
-          btn.textContent = opt;
+          btn.className = 'optbtn'; btn.textContent = opt;
           btn.addEventListener('click', (e)=>{
             e.preventDefault(); e.stopPropagation();
-            if(i !== item.answer){
-              btn.classList.add('bad');
-              btn.disabled = true;
-              return;
-            }
-            btn.classList.add('ok');
-            [...els.mcArea.querySelectorAll('button')].forEach(b=>b.disabled=true);
+            if(i !== item.answer){ btn.classList.add('bad'); btn.disabled = true; return; }
+            btn.classList.add('ok'); [...els.mcArea.querySelectorAll('button')].forEach(b=>b.disabled=true);
             setTimeout(()=>{ showingFront = false; render(); }, 250);
           }, { passive:false });
           els.mcArea.appendChild(btn);
         });
       } else {
-        els.mcArea.classList.add('hidden');
-        els.mcArea.innerHTML = '';
-        if(item.type==='quiz4' && showingFront){ els.sub.textContent = 'Choose the correct answer.'; }
-        else { els.sub.textContent = 'Tap / Space to flip · Swipe / ← → to navigate'; }
+        els.mcArea.classList.add('hidden'); els.mcArea.innerHTML = '';
+        els.sub.textContent = (item.type==='quiz4' && showingFront) ? 'Choose the correct answer.' : 'Tap / Space to flip · Swipe / ← → to navigate';
       }
 
-      // QA-only UI visibility + audio source update
+      // QA controls
       if(mode==='qa'){
         showQAControls(true);
         els.btnSpeed.textContent = `${SPEEDS[speedIdx].toFixed(1)}×`;
@@ -465,90 +434,67 @@
         showQAControls(false);
       }
 
-      // Footer counters
+      // Footer
       els.counter.textContent = `${index+1} / ${deck.length}`;
       els.bar.style.width = `${((index+1)/deck.length)*100}%`;
 
       setHash();
     }
 
-    // -------------- Navigation --------------
+    // Nav
     function prev(){ index = (index-1+deck.length)%deck.length; showingFront=true; render(); }
     function next(){ index = (index+1)%deck.length; showingFront=true; render(); }
     function flip(){ showingFront = !showingFront; render(); }
     function shuffleDeck(){ deck = shuffle(deck); index=0; showingFront=true; render(); }
 
-    // -------------- URL Hash --------------
+    // URL hash
     function setHash(){ location.hash = `#${els.mode.value}:${index}`; }
-
-    // FIXED: read hash → set mode → build deck → set index → render
     function readHash(){
       const h = location.hash.replace('#','');
       if(!h){ buildDeck(); return; }
       const [m, i] = h.split(':');
-
-      if(m && [...els.mode.options].some(o=>o.value===m)){
-        els.mode.value = m;
-      }
-      buildDeck(); // now deck is ready for this mode
-
-      if(i && !Number.isNaN(+i)){
-        index = Math.max(0, Math.min(deck.length-1, +i));
-      }
+      if(m && [...els.mode.options].some(o=>o.value===m)) els.mode.value = m;
+      buildDeck();
+      if(i && !Number.isNaN(+i)) index = Math.max(0, Math.min(deck.length-1, +i));
       render();
     }
 
-    // -------------- Events --------------
+    // Events
     els.mode.addEventListener('change', ()=>{ buildDeck(); setHash(); });
     document.getElementById('btnPrev').addEventListener('click', prev);
     document.getElementById('btnNext').addEventListener('click', next);
     document.getElementById('btnFlip').addEventListener('click', flip);
     document.getElementById('btnShuffle').addEventListener('click', shuffleDeck);
 
-    // QA play/pause
+    // QA play/pause & speed
     els.btnPlay.addEventListener('click', (e)=>{
       e.preventDefault();
-      if(els.qaAudio.paused){
-        els.qaAudio.play().then(()=> setPlayButtonState()).catch(()=>{/* ignore */});
-      } else {
-        els.qaAudio.pause();
-        setPlayButtonState();
-      }
+      if(els.qaAudio.paused){ els.qaAudio.play().then(()=> setPlayButtonState()).catch(()=>{}); }
+      else { els.qaAudio.pause(); setPlayButtonState(); }
     });
-    // QA speed toggle 0.5x → 0.8x → 1.0x → 0.5x …
     els.btnSpeed.addEventListener('click', (e)=>{
       e.preventDefault();
       speedIdx = (speedIdx+1) % SPEEDS.length;
       els.qaAudio.playbackRate = SPEEDS[speedIdx];
       els.btnSpeed.textContent = `${SPEEDS[speedIdx].toFixed(1)}×`;
     });
-    // Keep button state synced with audio events
-    ['play','pause','ended'].forEach(ev=>{
-      els.qaAudio.addEventListener(ev, setPlayButtonState);
-    });
+    ['play','pause','ended'].forEach(ev=> els.qaAudio.addEventListener(ev, setPlayButtonState));
 
     // Keyboard
     window.addEventListener('keydown', (e)=>{
       if(e.code==='ArrowLeft'){ e.preventDefault(); prev(); }
       else if(e.code==='ArrowRight'){ e.preventDefault(); next(); }
-      else if(e.code==='Space'){ 
-        // allow space to control play/pause in QA if focus isn't on a button
-        if(els.mode.value==='qa'){
-          e.preventDefault();
-          els.btnPlay.click();
-        } else {
-          e.preventDefault(); 
-          if(!(els.mode.value==='quiz' && showingFront)) flip(); 
-        }
+      else if(e.code==='Space'){
+        if(els.mode.value==='qa'){ e.preventDefault(); els.btnPlay.click(); }
+        else { e.preventDefault(); if(!(els.mode.value==='quiz' && showingFront)) flip(); }
       } else if(['1','2','3','4'].includes(e.key) && els.mode.value==='quiz' && showingFront){
         const i = parseInt(e.key,10)-1; const b=els.mcArea.querySelectorAll('button')[i]; if(b) b.click();
       }
     });
 
-    // Click/Touch to flip (disabled on Quiz front)
+    // Click/Touch to flip (avoid clicks on QA controls and picture)
     document.getElementById('card').addEventListener('click', (e)=>{
       if(els.mode.value==='quiz' && showingFront) return;
-      // In QA, don't flip when the user clicks the inner buttons/pic
       if(e.target.closest('#btnPlay') || e.target.closest('#btnSpeed') || e.target.id==='pic') return;
       flip();
     }, { passive:true });
@@ -561,11 +507,8 @@
     document.getElementById('card').addEventListener('touchend', (e)=>{
       const t=e.changedTouches[0]; if(touchStartX===null) return;
       const dx=t.clientX - touchStartX; const dy=t.clientY - touchStartY;
-      if(Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)){
-        if(dx>0) prev(); else next();
-      } else if(Math.abs(dy)<10 && Math.abs(dx)<10){
-        if(!(els.mode.value==='quiz' && showingFront)) flip();
-      }
+      if(Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)){ if(dx>0) prev(); else next(); }
+      else if(Math.abs(dy)<10 && Math.abs(dx)<10){ if(!(els.mode.value==='quiz' && showingFront)) flip(); }
       touchStartX=touchStartY=null;
     }, {passive:true});
 
