@@ -12,24 +12,19 @@
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif;
       color:var(--ink);
       background:url('Booha card.jpg') center/cover fixed no-repeat;
-      overflow:hidden; /* lock page so the card never cuts off from page scroll */
+      overflow:hidden;
     }
-    /* Full-height app frame */
     .wrap{
       height:100%;
       max-width:900px;
       margin:0 auto;
       padding: max(10px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
                max(10px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      box-sizing:border-box;
+      display:flex;flex-direction:column;gap:10px;box-sizing:border-box;
     }
     header{
       display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;
-      background:rgba(255,255,255,0.88);padding:12px 16px;
-      border-radius:16px;box-shadow:0 4px 10px rgba(0,0,0,0.15)
+      background:rgba(255,255,255,0.88);padding:12px 16px;border-radius:16px;box-shadow:0 4px 10px rgba(0,0,0,0.15)
     }
     header h1{
       font-size:18px;margin:0;font-weight:800;letter-spacing:.3px;
@@ -48,62 +43,39 @@
     button:hover{background:#f0f0f0}
     button:active{transform:scale(.98)}
     .pill{border:1px solid #ccc;border-radius:999px;padding:6px 10px;font-size:12px;background:rgba(255,255,255,0.7)}
-    /* Card auto-fits between header and footer */
+
     .card{
-      flex:1 1 auto;
-      min-height:0; /* allow flex shrink */
-      user-select:none;-webkit-user-select:none;
-      display:flex;flex-direction:column;justify-content:center;align-items:center;
-      text-align:center;background:url('Booha card.jpg') center/cover no-repeat;
-      border:1px solid #ccc;border-radius:24px;padding:16px 16px 20px;margin:0;
-      box-shadow:0 10px 40px rgba(0,0,0,.25); position:relative;
-      overflow:hidden;
+      flex:1 1 auto;min-height:0;user-select:none;-webkit-user-select:none;
+      display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;
+      background:url('Booha card.jpg') center/cover no-repeat;border:1px solid #ccc;border-radius:24px;
+      padding:16px 16px 20px;margin:0;box-shadow:0 10px 40px rgba(0,0,0,.25); position:relative; overflow:hidden;
     }
-    .brand{
-      position:absolute;top:10px;left:12px;display:flex;gap:8px;align-items:center;
-      background:rgba(255,255,255,0.85);padding:6px 10px;border-radius:12px;border:1px solid #ddd;
-      box-shadow:0 2px 6px rgba(0,0,0,0.08); font-weight:800; letter-spacing:.2px;
-    }
+    .brand{position:absolute;top:10px;left:12px;display:flex;gap:8px;align-items:center;
+      background:rgba(255,255,255,0.85);padding:6px 10px;border-radius:12px;border:1px solid #ddd;box-shadow:0 2px 6px rgba(0,0,0,0.08); font-weight:800; letter-spacing:.2px;}
     .brand img{height:20px;width:auto}
     .brand span{background:linear-gradient(90deg,#7dd3fc,#60a5fa,#a78bfa,#f472b6);
       -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-    .label{color:var(--muted);font-size:13px;letter-spacing:.3px;margin-bottom:8px;
-      background:rgba(255,255,255,0.7);padding:4px 8px;border-radius:8px}
+    .label{color:var(--muted);font-size:13px;letter-spacing:.3px;margin-bottom:8px;background:rgba(255,255,255,0.7);padding:4px 8px;border-radius:8px}
 
-    /* Picture block – NO CROPPING (contain), scales to fit card */
+    /* NO CROPPING for QA images */
     .picture{
-      display:block;
-      width:min(96%, 860px);
-      max-height:52vh;        /* keep footer visible on small screens */
-      height:auto;
-      object-fit:contain;      /* <- key change: never crop */
-      border-radius:16px;
-      border:1px solid #ddd;
-      box-shadow:0 6px 18px rgba(0,0,0,.15);
-      background:#fff;
-      margin:6px auto 12px;
+      display:block;width:min(96%, 860px);max-height:52vh;height:auto;
+      object-fit:contain;border-radius:16px;border:1px solid #ddd;box-shadow:0 6px 18px rgba(0,0,0,.15);background:#fff;margin:6px auto 12px;
     }
 
-    .main{font-size:28px;line-height:1.25;font-weight:800;margin:8px 0 10px;
-      background:rgba(255,255,255,0.86);padding:8px 12px;border-radius:12px}
-    .sub{font-size:18px;opacity:.92;margin:0 0 6px;background:rgba(255,255,255,0.65);
-      padding:4px 10px;border-radius:8px}
-    .hira{font-size:18px;color:var(--accent);opacity:.95;background:rgba(255,255,255,0.75);
-      padding:4px 10px;border-radius:8px}
+    .main{font-size:28px;line-height:1.25;font-weight:800;margin:8px 0 10px;background:rgba(255,255,255,0.86);padding:8px 12px;border-radius:12px}
+    .sub{font-size:18px;opacity:.92;margin:0 0 6px;background:rgba(255,255,255,0.65);padding:4px 10px;border-radius:8px}
+    .hira{font-size:18px;color:var(--accent);opacity:.95;background:rgba(255,255,255,0.75);padding:4px 10px;border-radius:8px}
     .muted{color:var(--muted)}
     .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center}
     .footer{
-      flex:0 0 auto;
-      display:flex;align-items:center;justify-content:space-between;margin-top:8px;color:var(--muted);font-size:13px;
+      flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;margin-top:8px;color:var(--muted);font-size:13px;
       background:rgba(255,255,255,0.85);padding:8px 12px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1)
     }
     .progress{height:8px;border-radius:999px;background:#eee;overflow:hidden}
     .progress>span{display:block;height:100%;background:linear-gradient(90deg,#7dd3fc,#60a5fa,#a78bfa,#f472b6);width:0%}
     .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-    @media (max-width:700px){
-      .grid{grid-template-columns:repeat(2,minmax(0,1fr));}
-      .main{font-size:24px}
-    }
+    @media (max-width:700px){ .grid{grid-template-columns:repeat(2,minmax(0,1fr));} .main{font-size:24px}}
     a{color:#0b78ff;text-decoration:none}
     .hidden{display:none}
     .options{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:12px}
@@ -119,7 +91,7 @@
     .playBtn.playing::after{content:' Ⅱ';}
     .speedBtn{min-width:74px;text-align:center}
 
-    /* Simple welcome overlay kept minimal */
+    /* Welcome overlay */
     .welcomeOverlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:50;background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.86));}
     .welcomeCard{max-width:720px;width:min(92%,720px);text-align:center;background:rgba(255,255,255,0.96);border:1px solid #ddd;border-radius:24px;box-shadow:0 12px 40px rgba(0,0,0,.18);padding:28px}
     .welcomeCard img{width:96px;height:auto;margin:8px auto 12px;display:block}
@@ -144,10 +116,10 @@
       <h1><img src="booha-ghost.png" alt=""> Boo-riculum – TOEIC (500-600) set-1</h1>
       <div class="controls">
         <select id="mode" aria-label="Mode">
-          <option value="vocab-j2e">Vocab: 🇯🇵 → 🇺🇸</option>
+          <option value="vocab-j2e" selected>Vocab: 🇯🇵 → 🇺🇸</option>
           <option value="vocab-e2j">Vocab: 🇺🇸 → 🇯🇵</option>
           <option value="sentences">Sentences (practice)</option>
-          <option value="qa" selected>Questions (practice)</option>
+          <option value="qa">Questions (practice)</option>
           <option value="quiz">Quiz (multiple choice)</option>
           <option value="reading">Reading</option>
         </select>
@@ -191,7 +163,7 @@
   </div>
 
   <script>
-    // ---------- Tiny helper (kept) ----------
+    // ---------- Tiny helper ----------
     function svg(label, emoji){
       const base = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 675'>
         <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
@@ -289,7 +261,7 @@
 
     const READING = [{ en:"Reading passage coming soon…", ja:"準備中…" }];
 
-    // 1.jpg..20.jpg and assets/A1.m4a..A20.m4a
+    // asset paths
     const QA_IMAGES = Array.from({length:20}, (_,i)=> `${i+1}.jpg`);
     const QA_AUDIOS = Array.from({length:20}, (_,i)=> `assets/A${i+1}.m4a`);
 
@@ -316,7 +288,6 @@
       btnShuffle: document.getElementById('btnShuffle'),
       mcArea: document.getElementById('mcArea'),
       pic: document.getElementById('pic'),
-      // QA audio
       btnPlay: document.getElementById('btnPlay'),
       btnSpeed: document.getElementById('btnSpeed'),
       qaAudio: document.getElementById('qaAudio'),
@@ -325,7 +296,6 @@
     function shuffle(arr){ for(let i=arr.length-1;i>0;i++){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]]} return arr; }
     function showQAControls(show){
       document.querySelectorAll('.qaOnly').forEach(el=>{ el.style.display = show ? '' : 'none'; });
-      // Enable/disable play button based on audio availability
       if(show && deck.length){
         const hasAudio = !!deck[index].audio;
         els.btnPlay.disabled = !hasAudio;
@@ -393,18 +363,13 @@
       if(els.mode.value!=='qa' || deck.length===0) return;
       const item = deck[index];
       const src = item.audio;
-      // Guard: if missing audio, disable controls gracefully
       if(!src){ els.qaAudio.removeAttribute('src'); els.btnPlay.disabled = true; els.btnSpeed.disabled = true; return; }
       els.btnPlay.disabled = false; els.btnSpeed.disabled = false;
 
       const wasPlaying = !els.qaAudio.paused && !els.qaAudio.ended;
-      if(els.qaAudio.src !== (new URL(src, location.href)).href){
-        els.qaAudio.src = src;
-      }
+      if(els.qaAudio.src !== (new URL(src, location.href)).href){ els.qaAudio.src = src; }
       els.qaAudio.playbackRate = SPEEDS[speedIdx];
-      if(wasPlaying){
-        els.qaAudio.play().catch(()=>{ /* iOS will require a tap again */ });
-      }
+      if(wasPlaying){ els.qaAudio.play().catch(()=>{}); }
     }
 
     function setPlayButtonState(){
@@ -421,15 +386,13 @@
       const mode = els.mode.value;
       els.label.textContent = showingFront ? item.sideLabelFront : item.sideLabelBack;
 
-      // Picture (QA only; show when available)
+      // QA image
       if(item.img){
         els.pic.classList.remove('hidden');
         els.pic.src = item.img;
         els.pic.alt = item.sideLabelFront || 'illustration';
         els.pic.onerror = ()=>{ els.pic.classList.add('hidden'); };
-      } else {
-        els.pic.classList.add('hidden'); els.pic.removeAttribute('src');
-      }
+      } else { els.pic.classList.add('hidden'); els.pic.removeAttribute('src'); }
 
       // Text
       const content = showingFront ? item.front : item.back;
@@ -441,7 +404,7 @@
         els.main.innerHTML = `<div class="${item.type==='reading'?'small':''}">${content}</div>`;
       }
 
-      // Quiz front behavior
+      // Quiz options
       if(mode==='quiz' && item.type==='quiz4' && showingFront){
         els.sub.textContent = 'Choose the correct answer.';
         els.mcArea.classList.remove('hidden'); els.mcArea.innerHTML = '';
@@ -487,11 +450,7 @@
     // Nav
     function prev(){ index = (index-1+deck.length)%deck.length; showingFront=true; render(); }
     function next(){ index = (index+1)%deck.length; showingFront=true; render(); }
-    function flip(){ 
-      // In QA mode, Space toggles Play; clicking the card still flips
-      showingFront = !showingFront; 
-      render(); 
-    }
+    function flip(){ showingFront = !showingFront; render(); }
     function shuffleDeck(){ deck = shuffle(deck); index=0; showingFront=true; render(); }
 
     // URL hash
@@ -506,8 +465,18 @@
       render();
     }
 
+    // Start app NOW (and also on button)
+    function startApp() {
+      // Force start on vocab-j2e index 0
+      els.mode.value = 'vocab-j2e';
+      index = 0; showingFront = true;
+      buildDeck(); // builds + renders
+      // Hide overlay + show app
+      if(els.welcome) els.welcome.classList.add('hidden');
+      els.app.classList.remove('hidden');
+    }
+
     // Events
-    els.mode.addEventListener('change', ()=>{ buildDeck(); setHash(); });
     document.getElementById('btnPrev').addEventListener('click', prev);
     document.getElementById('btnNext').addEventListener('click', next);
     document.getElementById('btnFlip').addEventListener('click', flip);
@@ -539,7 +508,7 @@
       }
     });
 
-    // Click/Touch to flip (avoid clicks on QA controls and picture)
+    // Click/Touch to flip (ignore QA controls and image)
     document.getElementById('card').addEventListener('click', (e)=>{
       if(els.mode.value==='quiz' && showingFront) return;
       if(e.target.closest('#btnPlay') || e.target.closest('#btnSpeed') || e.target.id==='pic') return;
@@ -559,14 +528,14 @@
       touchStartX=touchStartY=null;
     }, {passive:true});
 
-    // Start overlay
-    document.getElementById('startBtn').addEventListener('click', ()=>{
-      els.welcome.classList.add('hidden');
-      els.app.classList.remove('hidden');
-      readHash(); // build + render
+    // Button + auto start
+    document.getElementById('startBtn').addEventListener('click', startApp);
+    document.addEventListener('DOMContentLoaded', ()=> {
+      // Auto-start so it never “freezes” on welcome
+      startApp();
+      // If someone shared a deep-link hash, honor it AFTER starting
+      if(location.hash){ readHash(); }
     });
-
-    // Init (if user loads with hash, we’ll build after Start)
   </script>
 </body>
 </html>
