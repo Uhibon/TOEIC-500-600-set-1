@@ -61,42 +61,53 @@
   </style>
 </head>
 <body>
-  <!-- Welcome -->
-  <div id="welcome" class="welcomeOverlay">
-    <div class="welcomeCard">
-      <img src="booha-ghost.png" alt="Booha ghost">
-      <h2>ようこそ：TOEIC（500〜600）セット1</h2>
-      <p>Welcome to TOEIC (500–600) set 1</p>
-      <!-- Inline stays, but we’ll also bind via JS for CSP safety -->
-      <button id="startBtn" class="startBtn" onclick="startApp()">Start / はじめる</button>
+/* Ensure the welcome overlay truly disappears when hidden */
+.welcomeOverlay.hidden{
+  display:none !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+
+<!-- Welcome -->
+<div id="welcome" class="welcomeOverlay">
+  <div class="welcomeCard">
+    <img src="booha-ghost.png" alt="Booha ghost">
+    <h2>ようこそ：TOEIC（500〜600）セット1</h2>
+    <p>Welcome to TOEIC (500–600) set 1</p>
+    <!-- Inline stays, but we’ll also bind via JS for CSP safety -->
+    <button id="startBtn" class="startBtn" onclick="startApp()">Start / はじめる</button>
+  </div>
+</div>
+
+<div class="wrap hidden" id="app">
+  <header>
+    <h1><img src="booha-ghost.png" alt=""> Boo-riculum – TOEIC (500-600) set-1</h1>
+    <div class="controls">
+      <select id="mode" aria-label="Mode">
+        <option value="vocab-j2e" selected>Vocab: 🇯🇵 → 🇺🇸</option>
+        <option value="vocab-e2j">Vocab: 🇺🇸 → 🇯🇵</option>
+        <option value="sentences">Sentences (practice)</option>
+        <option value="qa">Questions (practice)</option>
+        <option value="quiz">Quiz (multiple choice)</option>
+        <option value="reading">Reading</option>
+      </select>
     </div>
+  </header>
+
+  <div id="card" class="card" role="button" aria-label="flashcard" tabindex="0">
+    <div class="brand">
+      <img src="booha-ghost.png" alt="Booha ghost">
+      <span>Boo-riculum</span>
+    </div>
+    <div id="label" class="label">Front</div>
+
+    <img id="pic" class="picture hidden" alt="illustration">
+    <div id="main" class="main">—</div>
+    <div id="sub" class="sub muted">Tap or press Space to flip</div>
+    <div id="hira" class="hira hidden"></div>
+    <div id="mcArea" class="options hidden"></div>
   </div>
 
-  <div class="wrap hidden" id="app">
-    <header>
-      <h1><img src="booha-ghost.png" alt=""> Boo-riculum – TOEIC (500-600) set-1</h1>
-      <div class="controls">
-        <select id="mode" aria-label="Mode">
-          <option value="vocab-j2e" selected>Vocab: 🇯🇵 → 🇺🇸</option>
-          <option value="vocab-e2j">Vocab: 🇺🇸 → 🇯🇵</option>
-          <option value="sentences">Sentences (practice)</option>
-          <option value="qa">Questions (practice)</option>
-          <option value="quiz">Quiz (multiple choice)</option>
-          <option value="reading">Reading</option>
-        </select>
-      </div>
-    </header>
-
-    <div id="card" class="card" role="button" aria-label="flashcard" tabindex="0">
-      <div class="brand"><img src="booha-ghost.png" alt="Booha ghost"><span>Boo-riculum</span></div>
-      <div id="label" class="label">Front</div>
-
-      <img id="pic" class="picture hidden" alt="illustration">
-      <div id="main" class="main">—</div>
-      <div id="sub" class="sub muted">Tap or press Space to flip</div>
-      <div id="hira" class="hira hidden"></div>
-      <div id="mcArea" class="options hidden"></div>
-    </div>
 
     <div class="footer">
       <div class="row">
@@ -333,60 +344,51 @@
       const [m,i] = h.split(':'); if(m && [...els.mode.options].some(o=>o.value===m)) els.mode.value = m;
       buildDeck(); if(i && !Number.isNaN(+i)) index = Math.max(0,Math.min(deck.length-1,+i)); render();
     }
+   // -------------- START APP (fixed & forced to vocab-j2e:0) --------------
+<script>
+  window.startApp = function startApp(){
+    try{
+      // Force initial mode + first card
+      if(els.mode) els.mode.value = 'vocab-j2e';
+      index = 0; showingFront = true;
 
-    // -------------- START APP (fixed & forced to vocab-j2e:0) --------------
-    window.startApp = function startApp(){
-      try{
-        // Force initial mode and first card
-        if(els.mode) els.mode.value = 'vocab-j2e';
-        index = 0; showingFront = true;
+      // Build first deck
+      buildDeck();
 
-        // Build and render the first deck
-        buildDeck();
+      // Show app UI
+      if(els.app) els.app.classList.remove('hidden');
 
-        // Show the app, hide welcome
-        if(els.welcome) els.welcome.classList.add('hidden');
-        if(els.app) els.app.classList.remove('hidden');
-
-        // Lock the initial URL to the forced first mode
-        location.hash = '#vocab-j2e:0';
-
-        // NOTE: Do NOT call readHash() here; we want to keep the forced first mode.
-      }catch(err){
-        console.error('startApp error:', err);
-        if(els.welcome) els.welcome.classList.add('hidden');
-        if(els.app) els.app.classList.remove('hidden');
-        if(els.mode) els.mode.value = 'vocab-j2e';
-        index = 0; buildDeck();
-        location.hash = '#vocab-j2e:0';
+      // Hard-hide the welcome overlay (class + inline styles for safety)
+      if(els.welcome){
+        els.welcome.classList.add('hidden');
+        els.welcome.setAttribute('aria-hidden','true');
+        els.welcome.style.display = 'none';
+        els.welcome.style.visibility = 'hidden';
+        els.welcome.style.pointerEvents = 'none';
       }
-    };
 
-    // Events (unchanged)
-    els.mode.addEventListener('change', ()=>{ buildDeck(); });
-    document.getElementById('btnPrev').addEventListener('click', prev);
-    document.getElementById('btnNext').addEventListener('click', next);
-    document.getElementById('btnFlip').addEventListener('click', flip);
-    document.getElementById('btnShuffle').addEventListener('click', shuffleDeck);
-    document.getElementById('btnPlay').addEventListener('click', (e)=>{ e.preventDefault(); if(els.qaAudio.paused){ els.qaAudio.play().then(()=>setPlayButtonState()).catch(()=>{});} else { els.qaAudio.pause(); setPlayButtonState(); }});
-    document.getElementById('btnSpeed').addEventListener('click', (e)=>{ e.preventDefault(); const SPEEDS=[0.5,0.8,1.0]; speedIdx=(speedIdx+1)%SPEEDS.length; els.qaAudio.playbackRate=SPEEDS[speedIdx]; e.currentTarget.textContent=`${SPEEDS[speedIdx].toFixed(1)}×`; });
-    ['play','pause','ended'].forEach(ev=> els.qaAudio.addEventListener(ev, setPlayButtonState));
-
-    // Touch + keys (unchanged)
-    let tsX=null, tsY=null;
-    document.getElementById('card').addEventListener('touchstart',(e)=>{ const t=e.changedTouches[0]; tsX=t.clientX; tsY=t.clientY; },{passive:true});
-    document.getElementById('card').addEventListener('touchend',(e)=>{ const t=e.changedTouches[0]; if(tsX===null) return; const dx=t.clientX-tsX; const dy=t.clientY-tsY; if(Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)){ if(dx>0) prev(); else next(); } else if(Math.abs(dy)<10 && Math.abs(dx)<10){ flip(); } tsX=tsY=null; },{passive:true});
-
-    // Bind Start button programmatically (so it works even if inline handlers are blocked)
-    document.addEventListener('DOMContentLoaded', ()=>{
-      const startBtn = document.getElementById('startBtn');
-      if(startBtn){
-        startBtn.addEventListener('click', (e)=>{ e.preventDefault(); window.startApp(); });
+      // Lock URL to first mode/card
+      location.hash = '#vocab-j2e:0';
+    }catch(err){
+      console.error('startApp error:', err);
+      if(els.app) els.app.classList.remove('hidden');
+      if(els.welcome){
+        els.welcome.classList.add('hidden');
+        els.welcome.style.display = 'none';
       }
-      // Do NOT autostart; we want the Start button to control launch.
-      // If you ever want autostart again, uncomment the next line:
-      // window.startApp();
-    });
-  </script>
+      if(els.mode) els.mode.value = 'vocab-j2e';
+      index = 0; buildDeck();
+      location.hash = '#vocab-j2e:0';
+    }
+  };
+
+  // Ensure the button triggers start reliably
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const startBtn = document.getElementById('startBtn');
+    if(startBtn){
+      startBtn.addEventListener('click', (e)=>{ e.preventDefault(); window.startApp(); });
+    }
+  });
+</script>
 </body>
 </html>
