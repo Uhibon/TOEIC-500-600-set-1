@@ -23,7 +23,6 @@
     button{cursor:pointer;transition:transform .05s ease,background .2s}
     button:hover{background:#f0f0f0}
     button:active{transform:scale(.98)}
-    .pill{border:1px solid #ccc;border-radius:999px;padding:6px 10px;font-size:12px;background:rgba(255,255,255,.7)}
     .card{flex:1 1 auto;min-height:0;user-select:none;-webkit-user-select:none;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;background:url('Booha card.jpg') center/cover no-repeat;border:1px solid #ccc;border-radius:24px;padding:16px 16px 20px;margin:0;box-shadow:0 10px 40px rgba(0,0,0,.25);position:relative;overflow:hidden}
     .brand{position:absolute;top:10px;left:12px;display:flex;gap:8px;align-items:center;background:rgba(255,255,255,.85);padding:6px 10px;border-radius:12px;border:1px solid #ddd;box-shadow:0 2px 6px rgba(0,0,0,.08);font-weight:800;letter-spacing:.2px}
     .brand img{height:20px;width:auto}
@@ -38,10 +37,6 @@
     .footer{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;margin-top:8px;color:var(--muted);font-size:13px;background:rgba(255,255,255,.85);padding:8px 12px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
     .progress{height:8px;border-radius:999px;background:#eee;overflow:hidden}
     .progress>span{display:block;height:100%;background:linear-gradient(90deg,#7dd3fc,#60a5fa,#a78bfa,#f472b6);width:0%}
-    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-    @media (max-width:700px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));}.main{font-size:24px}}
-    a{color:#0b78ff;text-decoration:none}
-    .hidden{display:none}
     .options{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:12px}
     .optbtn{border:1px solid #ccc;border-radius:12px;padding:10px 14px;background:rgba(255,255,255,.95);cursor:pointer}
     .optbtn.ok{background:#dcfce7;border-color:#86efac;color:#166534}
@@ -60,7 +55,12 @@
     .welcomeCard img{width:96px;height:auto;margin:8px auto 12px;display:block}
     .welcomeCard h2{margin:6px 0 10px;font-size:24px}
     .welcomeCard p{margin:6px 0 14px;font-size:16px;color:#333}
-    .startBtn{background:#0b78ff;color:#fff;border:0;padding:12px 18px;border-radius:12px;font-weight:800;cursor:pointer;box-shadow:0 6px 18px rgba(11,120,255,.25)}
+    .startBtn{
+      background:var(--ok);
+      color:#fff;border:0;padding:12px 18px;border-radius:12px;
+      font-weight:800;cursor:pointer;box-shadow:0 6px 18px rgba(34,197,94,.25)
+    }
+    .startBtn:hover{filter:brightness(0.95)}
   </style>
 </head>
 <body>
@@ -70,8 +70,8 @@
   <div class="welcomeCard">
     <img src="booha-ghost.png" alt="Booha ghost">
     <h2>ようこそ：TOEIC（500〜600）セット1</h2>
-    <p>Welcome to TOEIC (500–600) set 1</p>
-    <button id="startBtn" class="startBtn">Start / はじめる</button>
+    <p>はじめに「スタート」を押してください。</p>
+    <button id="startBtn" class="startBtn">スタート</button>
   </div>
 </div>
 
@@ -80,10 +80,10 @@
     <h1><img src="booha-ghost.png" alt=""> Boo-riculum – TOEIC (500-600) set-1</h1>
     <div class="controls">
       <select id="mode" aria-label="Mode">
-        <option value="vocab-j2e">Vocab: 🇯🇵 → 🇺🇸</option>
+        <option value="vocab-j2e" selected>Vocab: 🇯🇵 → 🇺🇸</option>
         <option value="vocab-e2j">Vocab: 🇺🇸 → 🇯🇵</option>
         <option value="sentences">Sentences (practice)</option>
-        <option value="qa" selected>Questions (practice)</option>
+        <option value="qa">Questions (practice)</option>
         <option value="quiz">Quiz (multiple choice)</option>
         <option value="reading">Reading</option>
       </select>
@@ -99,15 +99,14 @@
 
     <img id="pic" class="picture hidden" alt="illustration">
     <div id="main" class="main">—</div>
-    <div id="sub" class="sub muted">Tap or press Space to flip</div>
+    <div id="sub" class="sub muted">Tap to flip · Swipe / ← →</div>
     <div id="hira" class="hira hidden"></div>
     <div id="mcArea" class="options hidden"></div>
   </div>
 
   <div class="footer">
     <div class="row">
-      <span class="pill">Keyboard: ← →</span>
-      <span class="pill">Space = Flip</span>
+      <!-- Pills removed per request -->
       <button id="btnPrev">◀︎ Prev</button>
       <button id="btnFlip">Flip</button>
       <button id="btnNext">Next ▶︎</button>
@@ -209,7 +208,6 @@
     { q:"To 'accomplish' a goal is to:", options:["begin it","delay it","achieve it","question it"], answer:2, ja:"目標を『accomplish』するとは？" }
   ];
 
-  // 10 Reading passages aligned to the set
   const READING = [
     { en:"Our team collaborated across departments to compile last quarter’s sales data and clarify the main reasons for the decline.", ja:"私たちのチームは部門横断で協力し、先四半期の売上データをまとめ、減少の主な理由を明確にしました。" },
     { en:"Management authorized a new policy to conserve energy after hours and maintain consistent security procedures.", ja:"経営陣は、営業時間外の省エネと一貫したセキュリティ手順の維持に関する新方針を承認しました。" },
@@ -223,7 +221,7 @@
     { en:"Regular evaluations help maintain consistent quality and conserve resources across projects.", ja:"定期的な評価は、プロジェクト全体で一貫した品質の維持と資源の節約に役立ちます。" }
   ];
 
-  // QA assets (exact filenames/paths you provided)
+  // QA assets
   const QA_IMAGES = Array.from({length:20}, (_,i)=> `${i+1}.jpg`);
   const QA_AUDIOS = Array.from({length:20}, (_,i)=> `assets/A${i+1}.m4a`);
 
@@ -407,7 +405,7 @@
       });
     } else {
       els.mcArea.classList.add('hidden'); els.mcArea.innerHTML='';
-      els.sub.textContent = (item.type==='quiz4'&&showingFront)?'Choose the correct answer.':'Tap / Space to flip · Swipe / ← → to navigate';
+      els.sub.textContent = (item.type==='quiz4'&&showingFront)?'Choose the correct answer.':'Tap to flip · Swipe / ← →';
     }
 
     // QA controls toggle + audio refresh
@@ -437,10 +435,11 @@
   // ---------- STARTUP ----------
   function startApp(){
     try{
-      // Honor deep link mode if present; otherwise default to QA
+      // Default to Vocab JP→EN unless URL hash explicitly requests another mode
       const h = location.hash.replace('#','');
       const askMode = h && h.split(':')[0];
-      if(els.mode) els.mode.value = (askMode && [...els.mode.options].some(o=>o.value===askMode)) ? askMode : 'qa';
+      const defaultMode = 'vocab-j2e';
+      if(els.mode) els.mode.value = (askMode && [...els.mode.options].some(o=>o.value===askMode)) ? askMode : defaultMode;
 
       index = 0; showingFront = true;
       buildDeck();
@@ -462,20 +461,17 @@
       console.error('startApp error:', err);
       els.app.classList.remove('hidden');
       els.welcome.classList.add('hidden'); els.welcome.style.display='none';
-      if(els.mode) els.mode.value = 'qa';
-      index = 0; buildDeck(); location.hash = '#qa:0';
+      if(els.mode) els.mode.value = 'vocab-j2e';
+      index = 0; buildDeck(); location.hash = '#vocab-j2e:0';
     }
   }
   window.startApp = startApp;
 
   // ---------- BINDINGS ----------
   document.addEventListener('DOMContentLoaded', ()=>{
-    // Start button (still usable)
+    // Start button only (no auto-start)
     const startBtn = document.getElementById('startBtn');
     if(startBtn){ startBtn.addEventListener('click', (e)=>{ e.preventDefault(); startApp(); }); }
-
-    // Autostart so you’re never stuck at 0/0
-    startApp();
 
     // Controls
     els.btnPrev.addEventListener('click', (e)=>{ e.preventDefault(); prev(); });
@@ -484,10 +480,11 @@
     els.btnShuffle.addEventListener('click', (e)=>{ e.preventDefault(); shuffleDeck(); });
     els.mode.addEventListener('change', ()=>{ buildDeck(); });
 
-    // Card interactions
+    // Card interactions (tap/click to flip)
     els.card.addEventListener('click', ()=> flip());
+
+    // Keyboard: keep ← → navigation; remove Space-to-flip per request
     document.addEventListener('keydown', (e)=>{
-      if(e.code==='Space'){ e.preventDefault(); flip(); }
       if(e.key==='ArrowLeft'){ prev(); }
       if(e.key==='ArrowRight'){ next(); }
     });
@@ -495,13 +492,14 @@
     // QA audio controls
     els.btnPlay.addEventListener('click', ()=>{
       if(els.qaAudio.paused){
-        els.qaAudio.play().catch(()=>{ /* autoplay blocked: user can press again */ });
+        els.qaAudio.play().catch(()=>{ /* autoplay blocked */ });
       } else {
         els.qaAudio.pause();
       }
       setPlayButtonState();
     });
     els.btnSpeed.addEventListener('click', ()=>{
+      const SPEEDS = [0.5, 0.8, 1.0];
       speedIdx = (speedIdx+1)%SPEEDS.length;
       els.qaAudio.playbackRate = SPEEDS[speedIdx];
       els.btnSpeed.textContent = `${SPEEDS[speedIdx].toFixed(1)}×`;
