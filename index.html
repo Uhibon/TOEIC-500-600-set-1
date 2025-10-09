@@ -52,7 +52,10 @@
     .playBtn.paused::after{content:' ▶︎'}
     .playBtn.playing::after{content:' Ⅱ'}
     .speedBtn{min-width:74px;text-align:center}
+
+    /* Welcome overlay */
     .welcomeOverlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:50;background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.86))}
+    .welcomeOverlay.hidden{display:none !important;visibility:hidden !important;pointer-events:none !important;}
     .welcomeCard{max-width:720px;width:min(92%,720px);text-align:center;background:rgba(255,255,255,.96);border:1px solid #ddd;border-radius:24px;box-shadow:0 12px 40px rgba(0,0,0,.18);padding:28px}
     .welcomeCard img{width:96px;height:auto;margin:8px auto 12px;display:block}
     .welcomeCard h2{margin:6px 0 10px;font-size:24px}
@@ -61,12 +64,6 @@
   </style>
 </head>
 <body>
-/* Ensure the welcome overlay truly disappears when hidden */
-.welcomeOverlay.hidden{
-  display:none !important;
-  visibility:hidden !important;
-  pointer-events:none !important;
-}
 
 <!-- Welcome -->
 <div id="welcome" class="welcomeOverlay">
@@ -74,12 +71,11 @@
     <img src="booha-ghost.png" alt="Booha ghost">
     <h2>ようこそ：TOEIC（500〜600）セット1</h2>
     <p>Welcome to TOEIC (500–600) set 1</p>
-    <!-- Inline stays, but we’ll also bind via JS for CSP safety -->
-    <button id="startBtn" class="startBtn" onclick="startApp()">Start / はじめる</button>
+    <button id="startBtn" class="startBtn">Start / はじめる</button>
   </div>
 </div>
 
-<div class="wrap hidden" id="app">
+<div class="wrap hidden" id="app" aria-hidden="true">
   <header>
     <h1><img src="booha-ghost.png" alt=""> Boo-riculum – TOEIC (500-600) set-1</h1>
     <div class="controls">
@@ -108,245 +104,254 @@
     <div id="mcArea" class="options hidden"></div>
   </div>
 
-
-    <div class="footer">
-      <div class="row">
-        <span class="pill">Keyboard: ← →</span>
-        <span class="pill">Space = Flip</span>
-        <button id="btnPrev">◀︎ Prev</button>
-        <button id="btnFlip">Flip</button>
-        <button id="btnNext">Next ▶︎</button>
-        <button id="btnShuffle">Shuffle</button>
-        <!-- QA audio controls -->
-        <button id="btnPlay" class="playBtn qaOnly paused">Play</button>
-        <button id="btnSpeed" class="speedBtn qaOnly">1.0×</button>
-      </div>
-      <div style="min-width:180px;text-align:right">
-        <div id="counter" class="muted">0 / 0</div>
-        <div class="progress" aria-hidden="true"><span id="bar"></span></div>
-      </div>
+  <div class="footer">
+    <div class="row">
+      <span class="pill">Keyboard: ← →</span>
+      <span class="pill">Space = Flip</span>
+      <button id="btnPrev">◀︎ Prev</button>
+      <button id="btnFlip">Flip</button>
+      <button id="btnNext">Next ▶︎</button>
+      <button id="btnShuffle">Shuffle</button>
+      <!-- QA audio controls -->
+      <button id="btnPlay" class="playBtn qaOnly paused">Play</button>
+      <button id="btnSpeed" class="speedBtn qaOnly">1.0×</button>
     </div>
-
-    <audio id="qaAudio" preload="metadata" playsinline></audio>
+    <div style="min-width:180px;text-align:right">
+      <div id="counter" class="muted">0 / 0</div>
+      <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    </div>
   </div>
 
-  <script>
-    // --- helper ---
-    function svg(label, emoji){
-      const base = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 675'>
-        <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
-          <stop offset='0%' stop-color='#eaf3ff'/><stop offset='100%' stop-color='#f7e9ff'/></linearGradient></defs>
-        <rect width='1200' height='675' fill='url(#g)'/>
-        <rect x='60' y='60' width='1080' height='555' rx='28' fill='white' stroke='#d7d7d7'/>
-        <text x='600' y='320' font-size='144' text-anchor='middle' dominant-baseline='central'>${emoji||'💼'}</text>
-        <text x='600' y='520' font-size='40' text-anchor='middle' fill='#333' font-family='Inter,Segoe UI,Arial,sans-serif'>${label}</text>
-      </svg>`;
-      return 'data:image/svg+xml;utf8,' + base.replace(/\n/g,'');
-    }
+  <audio id="qaAudio" preload="metadata" playsinline></audio>
+</div>
 
-    // --- data (unchanged) ---
-    const VOCAB = [
-      { en:"accomplish", ja:"達成する" }, { en:"allocate", ja:"割り当てる" },
-      { en:"approximately", ja:"およそ／約" }, { en:"assemble", ja:"組み立てる；集める" },
-      { en:"assume", ja:"仮定する；引き受ける" }, { en:"authorize", ja:"承認する；認可する" },
-      { en:"capacity", ja:"能力；収容能力" }, { en:"cautious", ja:"用心深い；慎重な" },
-      { en:"clarify", ja:"明確にする" }, { en:"collaborate", ja:"協力する；共同で行う" },
-      { en:"compile", ja:"まとめる；編集する" }, { en:"confirm", ja:"確認する" },
-      { en:"conserve", ja:"節約する；保存する" }, { en:"consistent", ja:"一貫した；矛盾のない" },
-      { en:"decline", ja:"断る；減少する" }, { en:"encourage", ja:"励ます；促す" },
-      { en:"evaluate", ja:"評価する" }, { en:"implement", ja:"実行する；実施する" },
-      { en:"maintain", ja:"維持する；主張する" }, { en:"suspend", ja:"一時停止する；保留にする" }
-    ];
-
-    const SENTENCES = [
-      { en:"We need to allocate more time to training.", ja:"研修にもっと時間を割り当てる必要があります。" },
-      { en:"The parts are easy to assemble with the manual.", ja:"その部品は取扱説明書で簡単に組み立てられます。" },
-      { en:"Please confirm your attendance by Friday.", ja:"金曜日までに出欠をご確認ください。" },
-      { en:"Sales declined slightly last quarter.", ja:"先四半期に売上はわずかに減少しました。" },
-      { en:"Her explanation clarified the policy.", ja:"彼女の説明で方針が明確になりました。" },
-      { en:"The company authorized the refund.", ja:"会社は返金を承認しました。" },
-      { en:"Our factory operates at full capacity in summer.", ja:"当工場は夏に最大稼働しています。" },
-      { en:"Be cautious when signing the contract.", ja:"契約に署名する際は慎重になってください。" },
-      { en:"We will collaborate with a local supplier.", ja:"地元のサプライヤーと協力します。" },
-      { en:"The report compiles data from three surveys.", ja:"その報告書は3つの調査からのデータをまとめています。" },
-      { en:"They implemented a new security system.", ja:"彼らは新しいセキュリティシステムを実施しました。" },
-      { en:"Please conserve energy after hours.", ja:"営業時間外はエネルギーを節約してください。" },
-      { en:"We evaluate projects every quarter.", ja:"我々は四半期ごとにプロジェクトを評価します。" },
-      { en:"The machine requires regular maintenance.", ja:"その機械には定期的な保守が必要です。" },
-      { en:"He assumed the role of team leader.", ja:"彼はチームリーダーの役割を引き受けました。" },
-      { en:"Results remain consistent across tests.", ja:"結果はテスト全体で一貫しています。" },
-      { en:"The event was suspended due to the weather.", ja:"天候のためイベントは一時中止になりました。" },
-      { en:"Encourage customers to leave feedback.", ja:"顧客にフィードバックの記入を促してください。" },
-      { en:"We accomplished our yearly targets.", ja:"年間目標を達成しました。" },
-      { en:"The estimate is approximately ten percent lower.", ja:"見積もりはおよそ10%低くなっています。" }
-    ];
-
-    const QA = [
-      { q_en:"What does 'allocate' mean in project management?", a_en:"To assign resources, time, or money to tasks.", q_ja:"プロジェクト管理での『allocate』は何を意味しますか？", a_ja:"資源・時間・資金をタスクに割り当てること。" },
-      { q_en:"When should you confirm a meeting?", a_en:"After the date/time is set and before the day of the meeting.", q_ja:"会議はいつ確認すべきですか？", a_ja:"日時が決まった後で、当日より前に確認する。" },
-      { q_en:"Why conserve energy at the office?", a_en:"To reduce costs and environmental impact.", q_ja:"なぜオフィスでエネルギーを節約するのですか？", a_ja:"コストと環境負荷を減らすため。" },
-      { q_en:"What is consistent performance?", a_en:"Results that are stable and reliable over time.", q_ja:"一貫した業績とは？", a_ja:"時間が経っても安定・信頼できる成果。" },
-      { q_en:"How do teams collaborate online?", a_en:"Using shared tools like chat, docs, and task boards.", q_ja:"チームはオンラインでどう協力しますか？", a_ja:"チャット、ドキュメント、タスクボードなどの共有ツールを使う。" },
-      { q_en:"What does it mean to implement a plan?", a_en:"To execute it in practice.", q_ja:"計画を実行するとは？", a_ja:"実際に実行すること。" },
-      { q_en:"When might a company suspend operations?", a_en:"During emergencies or system maintenance.", q_ja:"会社が業務を停止するのはいつ？", a_ja:"緊急時やシステム保守の間。" },
-      { q_en:"How do you evaluate a vendor?", a_en:"By price, quality, reliability, and service.", q_ja:"ベンダーをどう評価しますか？", a_ja:"価格・品質・信頼性・サービスで評価する。" },
-      { q_en:"What does 'assume responsibility' imply?", a_en:"You accept the duty and its consequences.", q_ja:"『責任を引き受ける』とは？", a_ja:"責任とその結果を引き受けること。" },
-      { q_en:"What is the capacity of a venue?", a_en:"The maximum number of people it can hold.", q_ja:"会場の収容人数とは？", a_ja:"収容可能な最大人数。" },
-      { q_en:"Why clarify instructions?", a_en:"To prevent mistakes and delays.", q_ja:"指示を明確にする理由は？", a_ja:"ミスと遅延を防ぐため。" },
-      { q_en:"How can managers encourage staff?", a_en:"By recognizing efforts and offering support.", q_ja:"管理職はどうやって職員を励ます？", a_ja:"努力を認め、支援を提供する。" },
-      { q_en:"What does 'compile a report' involve?", a_en:"Collecting and organizing information.", q_ja:"『報告書をまとめる』とは？", a_ja:"情報を収集し整理すること。" },
-      { q_en:"When do sales typically decline?", a_en:"During off-peak seasons or recessions.", q_ja:"売上が落ちやすい時期は？", a_ja:"閑散期や不況のとき。" },
-      { q_en:"What is approximately ten minutes?", a_en:"About eight to twelve minutes.", q_ja:"『約10分』とは？", a_ja:"8〜12分程度。" },
-      { q_en:"Why be cautious with emails?", a_en:"To avoid scams and data leaks.", q_ja:"メールに注意すべき理由は？", a_ja:"詐欺や情報漏えいを避けるため。" },
-      { q_en:"How do you maintain equipment?", a_en:"Clean, inspect, and service it regularly.", q_ja:"設備の維持方法は？", a_ja:"定期的に清掃・点検・整備する。" },
-      { q_en:"Who can authorize expenses?", a_en:"Supervisors or finance departments.", q_ja:"費用を承認できるのは誰？", a_ja:"上長や経理部門。" },
-      { q_en:"What does 'accomplish a task' mean?", a_en:"Finish it successfully.", q_ja:"『タスクを達成する』とは？", a_ja:"うまくやり遂げること。" },
-      { q_en:"What happens when teams fail to collaborate?", a_en:"Work is duplicated and deadlines are missed.", q_ja:"協力できないと何が起きる？", a_ja:"作業の重複や締切遅延が起きる。" }
-    ];
-
-    const QUIZ = [
-      { q:"'Allocate' is closest in meaning to:", options:["distribute","repair","delay","dismiss"], answer:0, ja:"『allocate』に最も近い意味は？" },
-      { q:"'Approximately' means:", options:["exactly","about","rarely","equally"], answer:1, ja:"『approximately』の意味は？" },
-      { q:"To 'assemble' equipment is to:", options:["store it","build it","ship it","return it"], answer:1, ja:"機器を『assemble』するとは？" },
-      { q:"'Authorize' most nearly means:", options:["approve","argue","announce","avoid"], answer:0, ja:"『authorize』の意味に最も近いのは？" },
-      { q:"'Capacity' refers to:", options:["cost of labor","maximum ability","average time","customer review"], answer:1, ja:"『capacity』は何を指す？" },
-      { q:"A 'cautious' approach is:", options:["careless","patient","careful","creative"], answer:2, ja:"『cautious』なアプローチは？" },
-      { q:"To 'clarify' instructions is to:", options:["shorten them","make them clear","ignore them","translate them"], answer:1, ja:"指示を『clarify』するとは？" },
-      { q:"Teams 'collaborate' when they:", options:["compete","work together","rotate jobs","work overtime"], answer:1, ja:"チームが『collaborate』するのは？" },
-      { q:"To 'compile' data means to:", options:["delete it","compare it","collect it","share it"], answer:2, ja:"データを『compile』するとは？" },
-      { q:"To 'confirm' an order is to:", options:["cancel it","verify it","ship it","print it"], answer:1, ja:"注文を『confirm』するとは？" },
-      { q:"To 'conserve' resources is to:", options:["save them","spend them","waste them","audit them"], answer:0, ja:"資源を『conserve』するとは？" },
-      { q:"'Consistent' results are:", options:["irregular","similar over time","unexpected","declining"], answer:1, ja:"『consistent』な結果とは？" },
-      { q:"To 'decline' an invitation is to:", options:["accept","postpone","refuse","repeat"], answer:2, ja:"招待を『decline』するとは？" },
-      { q:"To 'encourage' staff is to:", options:["criticize","motivate","replace","observe"], answer:1, ja:"職員を『encourage』するとは？" },
-      { q:"To 'evaluate' a program is to:", options:["guess","measure","announce","install"], answer:1, ja:"プログラムを『evaluate』するとは？" },
-      { q:"To 'implement' a policy is to:", options:["plan it","discuss it","enforce it","oppose it"], answer:2, ja:"方針を『implement』するとは？" },
-      { q:"To 'maintain' equipment is to:", options:["ignore","repair regularly","sell","relocate"], answer:1, ja:"設備を『maintain』するとは？" },
-      { q:"To 'assume' a role is to:", options:["reject it","take it on","criticize it","limit it"], answer:1, ja:"役割を『assume』するとは？" },
-      { q:"To 'suspend' service is to:", options:["reduce cost","improve quality","pause temporarily","expand rapidly"], answer:2, ja:"サービスを『suspend』するとは？" },
-      { q:"To 'accomplish' a goal is to:", options:["begin it","delay it","achieve it","question it"], answer:2, ja:"目標を『accomplish』するとは？" }
-    ];
-
-    const READING = [{ en:"Reading passage coming soon…", ja:"準備中…" }];
-
-    const QA_IMAGES = Array.from({length:20}, (_,i)=> `${i+1}.jpg`);
-    const QA_AUDIOS = Array.from({length:20}, (_,i)=> `assets/A${i+1}.m4a`);
-
-    // --- state/els ---
-    let deck = []; let index = 0; let showingFront = true;
-    const els = {
-      welcome: document.getElementById('welcome'),
-      app: document.getElementById('app'),
-      mode: document.getElementById('mode'),
-      card: document.getElementById('card'),
-      label: document.getElementById('label'),
-      main: document.getElementById('main'),
-      sub: document.getElementById('sub'),
-      hira: document.getElementById('hira'),
-      counter: document.getElementById('counter'),
-      btnPrev: document.getElementById('btnPrev'),
-      btnNext: document.getElementById('btnNext'),
-      btnFlip: document.getElementById('btnFlip'),
-      btnShuffle: document.getElementById('btnShuffle'),
-      mcArea: document.getElementById('mcArea'),
-      pic: document.getElementById('pic'),
-      bar: document.getElementById('bar'),
-      btnPlay: document.getElementById('btnPlay'),
-      btnSpeed: document.getElementById('btnSpeed'),
-      qaAudio: document.getElementById('qaAudio'),
-    };
-
-    function shuffle(arr){ for(let i=arr.length-1;i>0;i++){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j]]; } return arr; }
-
-    function showQAControls(show){
-      document.querySelectorAll('.qaOnly').forEach(el=>{ el.style.display = show ? '' : 'none'; });
-      if(show && deck.length){
-        const hasAudio = !!deck[index].audio;
-        els.btnPlay.disabled = !hasAudio;
-        els.btnSpeed.disabled = !hasAudio;
-      }
-      if(!show){ els.qaAudio.pause(); els.btnPlay.classList.remove('playing'); els.btnPlay.classList.add('paused'); }
-    }
-
-    function buildDeck(){
-      const mode = els.mode.value;
-      if(mode==='vocab-j2e' || mode==='vocab-e2j'){
-        deck = VOCAB.map(x=>({
-          type:'vocab',
-          front: mode==='vocab-j2e' ? x.ja : x.en,
-          back:  mode==='vocab-j2e' ? x.en : x.ja,
-          sideLabelFront: mode==='vocab-j2e' ? 'Japanese → English' : 'English → Japanese',
-          sideLabelBack:  mode==='vocab-j2e' ? 'English' : 'Japanese',
-        }));
-      } else if(mode==='sentences'){
-        deck = SENTENCES.map(s=>({ type:'sentence', front:s.ja, back:s.en+'\n'+s.ja, sideLabelFront:'Japanese sentence', sideLabelBack:'Answer (EN + JA)' }));
-      } else if(mode==='qa'){
-        deck = QA.map((q,i)=>({ type:'qa', front:q.q_ja||q.q_en, back:(q.a_en||'')+(q.a_ja?'\n'+q.a_ja:''), sideLabelFront:(q.q_ja?'Question (JA)':'Question (EN)'), sideLabelBack:'Answer (EN + JA)', img:QA_IMAGES[i]||null, audio:QA_AUDIOS[i]||null }));
-      } else if(mode==='quiz'){
-        deck = QUIZ.map(q=>({ type:'quiz4', front:q.q, back:(q.ja?q.ja+'\n':'')+'Answer: '+q.options[q.answer], options:q.options, answer:q.answer, sideLabelFront:'Choose the best answer', sideLabelBack:'Explanation' }));
-      } else if(mode==='reading'){
-        deck = READING.map(r=>({ type:'reading', front:r.en, back:r.en+'\n'+r.ja, sideLabelFront:'Reading (EN)', sideLabelBack:'Reading (EN + JA)' }));
-      }
-      index = 0; showingFront = true; render();
-    }
-
-    const SPEEDS = [0.5, 0.8, 1.0]; let speedIdx = 2;
-    function updateQAAudio(){
-      if(els.mode.value!=='qa' || deck.length===0) return;
-      const item = deck[index]; const src = item.audio;
-      if(!src){ els.qaAudio.removeAttribute('src'); els.btnPlay.disabled = true; els.btnSpeed.disabled = true; return; }
-      els.btnPlay.disabled = false; els.btnSpeed.disabled = false;
-      const wasPlaying = !els.qaAudio.paused && !els.qaAudio.ended;
-      const abs = (new URL(src, location.href)).href;
-      if(els.qaAudio.src !== abs){ els.qaAudio.src = src; }
-      els.qaAudio.playbackRate = SPEEDS[speedIdx];
-      if(wasPlaying){ els.qaAudio.play().catch(()=>{}); }
-    }
-    function setPlayButtonState(){ if(els.qaAudio.paused){ els.btnPlay.classList.remove('playing'); els.btnPlay.classList.add('paused'); } else { els.btnPlay.classList.remove('paused'); els.btnPlay.classList.add('playing'); } }
-
-    function render(){
-      if(deck.length===0){ els.main.textContent='—'; els.sub.textContent='No cards'; els.counter.textContent='0 / 0'; showQAControls(false); return; }
-      const item = deck[index]; const mode = els.mode.value;
-      document.getElementById('label').textContent = showingFront ? item.sideLabelFront : item.sideLabelBack;
-
-      if(item.img){ els.pic.classList.remove('hidden'); els.pic.src = item.img; els.pic.alt = item.sideLabelFront||'illustration'; els.pic.onerror = ()=>{ els.pic.classList.add('hidden'); }; }
-      else{ els.pic.classList.add('hidden'); els.pic.removeAttribute('src'); }
-
-      const content = showingFront ? item.front : item.back;
-      if((!showingFront) && (item.type==='qa'||item.type==='sentence'||item.type==='reading') && content.includes('\n')){
-        const [line1,line2] = content.split('\n');
-        els.main.innerHTML = `<div style="font-size:22px;font-weight:700" class="${item.type==='reading'?'small':''}">${line1}</div><div class="sub ${item.type==='reading'?'small':''}" style="margin-top:8px">${line2}</div>`;
-      } else { els.main.innerHTML = `<div class="${item.type==='reading'?'small':''}">${content}</div>`; }
-
-      if(mode==='quiz' && item.type==='quiz4' && showingFront){
-        els.sub.textContent = 'Choose the correct answer.'; els.mcArea.classList.remove('hidden'); els.mcArea.innerHTML='';
-        item.options.forEach((opt,i)=>{ const b=document.createElement('button'); b.className='optbtn'; b.textContent=opt;
-          b.addEventListener('click',(e)=>{ e.preventDefault(); e.stopPropagation(); if(i!==item.answer){ b.classList.add('bad'); b.disabled=true; return; } b.classList.add('ok'); [...els.mcArea.querySelectorAll('button')].forEach(x=>x.disabled=true); setTimeout(()=>{ showingFront=false; render(); },250); }, {passive:false});
-          els.mcArea.appendChild(b);
-        });
-      } else { els.mcArea.classList.add('hidden'); els.mcArea.innerHTML=''; els.sub.textContent = (item.type==='quiz4'&&showingFront)?'Choose the correct answer.':'Tap / Space to flip · Swipe / ← → to navigate'; }
-
-      if(mode==='qa'){ showQAControls(true); document.getElementById('btnSpeed').textContent = `${SPEEDS[speedIdx].toFixed(1)}×`; updateQAAudio(); setPlayButtonState(); }
-      else { showQAControls(false); }
-
-      els.counter.textContent = `${index+1} / ${deck.length}`;
-      const pct = ((index+1)/deck.length)*100; els.bar.style.width = `${pct}%`;
-      location.hash = `#${els.mode.value}:${index}`;
-    }
-
-    function prev(){ index=(index-1+deck.length)%deck.length; showingFront=true; render(); }
-    function next(){ index=(index+1)%deck.length; showingFront=true; render(); }
-    function flip(){ if(!(els.mode.value==='quiz' && showingFront)) { showingFront=!showingFront; render(); } }
-    function shuffleDeck(){ deck=shuffle(deck); index=0; showingFront=true; render(); }
-
-    function readHash(){
-      const h = location.hash.replace('#',''); if(!h){ buildDeck(); return; }
-      const [m,i] = h.split(':'); if(m && [...els.mode.options].some(o=>o.value===m)) els.mode.value = m;
-      buildDeck(); if(i && !Number.isNaN(+i)) index = Math.max(0,Math.min(deck.length-1,+i)); render();
-    }
-   // -------------- START APP (fixed & forced to vocab-j2e:0) --------------
 <script>
-  window.startApp = function startApp(){
+  // --- helper ---
+  function svg(label, emoji){
+    const base = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 675'>
+      <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+        <stop offset='0%' stop-color='#eaf3ff'/><stop offset='100%' stop-color='#f7e9ff'/></linearGradient></defs>
+      <rect width='1200' height='675' fill='url(#g)'/>
+      <rect x='60' y='60' width='1080' height='555' rx='28' fill='white' stroke='#d7d7d7'/>
+      <text x='600' y='320' font-size='144' text-anchor='middle' dominant-baseline='central'>${emoji||'💼'}</text>
+      <text x='600' y='520' font-size='40' text-anchor='middle' fill='#333' font-family='Inter,Segoe UI,Arial,sans-serif'>${label}</text>
+    </svg>`;
+    return 'data:image/svg+xml;utf8,' + base.replace(/\n/g,'');
+  }
+
+  // --- data ---
+  const VOCAB = [
+    { en:"accomplish", ja:"達成する" }, { en:"allocate", ja:"割り当てる" },
+    { en:"approximately", ja:"およそ／約" }, { en:"assemble", ja:"組み立てる；集める" },
+    { en:"assume", ja:"仮定する；引き受ける" }, { en:"authorize", ja:"承認する；認可する" },
+    { en:"capacity", ja:"能力；収容能力" }, { en:"cautious", ja:"用心深い；慎重な" },
+    { en:"clarify", ja:"明確にする" }, { en:"collaborate", ja:"協力する；共同で行う" },
+    { en:"compile", ja:"まとめる；編集する" }, { en:"confirm", ja:"確認する" },
+    { en:"conserve", ja:"節約する；保存する" }, { en:"consistent", ja:"一貫した；矛盾のない" },
+    { en:"decline", ja:"断る；減少する" }, { en:"encourage", ja:"励ます；促す" },
+    { en:"evaluate", ja:"評価する" }, { en:"implement", ja:"実行する；実施する" },
+    { en:"maintain", ja:"維持する；主張する" }, { en:"suspend", ja:"一時停止する；保留にする" }
+  ];
+
+  const SENTENCES = [
+    { en:"We need to allocate more time to training.", ja:"研修にもっと時間を割り当てる必要があります。" },
+    { en:"The parts are easy to assemble with the manual.", ja:"その部品は取扱説明書で簡単に組み立てられます。" },
+    { en:"Please confirm your attendance by Friday.", ja:"金曜日までに出欠をご確認ください。" },
+    { en:"Sales declined slightly last quarter.", ja:"先四半期に売上はわずかに減少しました。" },
+    { en:"Her explanation clarified the policy.", ja:"彼女の説明で方針が明確になりました。" },
+    { en:"The company authorized the refund.", ja:"会社は返金を承認しました。" },
+    { en:"Our factory operates at full capacity in summer.", ja:"当工場は夏に最大稼働しています。" },
+    { en:"Be cautious when signing the contract.", ja:"契約に署名する際は慎重になってください。" },
+    { en:"We will collaborate with a local supplier.", ja:"地元のサプライヤーと協力します。" },
+    { en:"The report compiles data from three surveys.", ja:"その報告書は3つの調査からのデータをまとめています。" },
+    { en:"They implemented a new security system.", ja:"彼らは新しいセキュリティシステムを実施しました。" },
+    { en:"Please conserve energy after hours.", ja:"営業時間外はエネルギーを節約してください。" },
+    { en:"We evaluate projects every quarter.", ja:"我々は四半期ごとにプロジェクトを評価します。" },
+    { en:"The machine requires regular maintenance.", ja:"その機械には定期的な保守が必要です。" },
+    { en:"He assumed the role of team leader.", ja:"彼はチームリーダーの役割を引き受けました。" },
+    { en:"Results remain consistent across tests.", ja:"結果はテスト全体で一貫しています。" },
+    { en:"The event was suspended due to the weather.", ja:"天候のためイベントは一時中止になりました。" },
+    { en:"Encourage customers to leave feedback.", ja:"顧客にフィードバックの記入を促してください。" },
+    { en:"We accomplished our yearly targets.", ja:"年間目標を達成しました。" },
+    { en:"The estimate is approximately ten percent lower.", ja:"見積もりはおよそ10%低くなっています。" }
+  ];
+
+  const QA = [
+    { q_en:"What does 'allocate' mean in project management?", a_en:"To assign resources, time, or money to tasks.", q_ja:"プロジェクト管理での『allocate』は何を意味しますか？", a_ja:"資源・時間・資金をタスクに割り当てること。" },
+    { q_en:"When should you confirm a meeting?", a_en:"After the date/time is set and before the day of the meeting.", q_ja:"会議はいつ確認すべきですか？", a_ja:"日時が決まった後で、当日より前に確認する。" },
+    { q_en:"Why conserve energy at the office?", a_en:"To reduce costs and environmental impact.", q_ja:"なぜオフィスでエネルギーを節約するのですか？", a_ja:"コストと環境負荷を減らすため。" },
+    { q_en:"What is consistent performance?", a_en:"Results that are stable and reliable over time.", q_ja:"一貫した業績とは？", a_ja:"時間が経っても安定・信頼できる成果。" },
+    { q_en:"How do teams collaborate online?", a_en:"Using shared tools like chat, docs, and task boards.", q_ja:"チームはオンラインでどう協力しますか？", a_ja:"チャット、ドキュメント、タスクボードなどの共有ツールを使う。" },
+    { q_en:"What does it mean to implement a plan?", a_en:"To execute it in practice.", q_ja:"計画を実行するとは？", a_ja:"実際に実行すること。" },
+    { q_en:"When might a company suspend operations?", a_en:"During emergencies or system maintenance.", q_ja:"会社が業務を停止するのはいつ？", a_ja:"緊急時やシステム保守の間。" },
+    { q_en:"How do you evaluate a vendor?", a_en:"By price, quality, reliability, and service.", q_ja:"ベンダーをどう評価しますか？", a_ja:"価格・品質・信頼性・サービスで評価する。" },
+    { q_en:"What does 'assume responsibility' imply?", a_en:"You accept the duty and its consequences.", q_ja:"『責任を引き受ける』とは？", a_ja:"責任とその結果を引き受けること。" },
+    { q_en:"What is the capacity of a venue?", a_en:"The maximum number of people it can hold.", q_ja:"会場の収容人数とは？", a_ja:"収容可能な最大人数。" },
+    { q_en:"Why clarify instructions?", a_en:"To prevent mistakes and delays.", q_ja:"指示を明確にする理由は？", a_ja:"ミスと遅延を防ぐため。" },
+    { q_en:"How can managers encourage staff?", a_en:"By recognizing efforts and offering support.", q_ja:"管理職はどうやって職員を励ます？", a_ja:"努力を認め、支援を提供する。" },
+    { q_en:"What does 'compile a report' involve?", a_en:"Collecting and organizing information.", q_ja:"『報告書をまとめる』とは？", a_ja:"情報を収集し整理すること。" },
+    { q_en:"When do sales typically decline?", a_en:"During off-peak seasons or recessions.", q_ja:"売上が落ちやすい時期は？", a_ja:"閑散期や不況のとき。" },
+    { q_en:"What is approximately ten minutes?", a_en:"About eight to twelve minutes.", q_ja:"『約10分』とは？", a_ja:"8〜12分程度。" },
+    { q_en:"Why be cautious with emails?", a_en:"To avoid scams and data leaks.", q_ja:"メールに注意すべき理由は？", a_ja:"詐欺や情報漏えいを避けるため。" },
+    { q_en:"How do you maintain equipment?", a_en:"Clean, inspect, and service it regularly.", q_ja:"設備の維持方法は？", a_ja:"定期的に清掃・点検・整備する。" },
+    { q_en:"Who can authorize expenses?", a_en:"Supervisors or finance departments.", q_ja:"費用を承認できるのは誰？", a_ja:"上長や経理部門。" },
+    { q_en:"What does 'accomplish a task' mean?", a_en:"Finish it successfully.", q_ja:"『タスクを達成する』とは？", a_ja:"うまくやり遂げること。" },
+    { q_en:"What happens when teams fail to collaborate?", a_en:"Work is duplicated and deadlines are missed.", q_ja:"協力できないと何が起きる？", a_ja:"作業の重複や締切遅延が起きる。" }
+  ];
+
+  const QUIZ = [
+    { q:"'Allocate' is closest in meaning to:", options:["distribute","repair","delay","dismiss"], answer:0, ja:"『allocate』に最も近い意味は？" },
+    { q:"'Approximately' means:", options:["exactly","about","rarely","equally"], answer:1, ja:"『approximately』の意味は？" },
+    { q:"To 'assemble' equipment is to:", options:["store it","build it","ship it","return it"], answer:1, ja:"機器を『assemble』するとは？" },
+    { q:"'Authorize' most nearly means:", options:["approve","argue","announce","avoid"], answer:0, ja:"『authorize』の意味に最も近いのは？" },
+    { q:"'Capacity' refers to:", options:["cost of labor","maximum ability","average time","customer review"], answer:1, ja:"『capacity』は何を指す？" },
+    { q:"A 'cautious' approach is:", options:["careless","patient","careful","creative"], answer:2, ja:"『cautious』なアプローチは？" },
+    { q:"To 'clarify' instructions is to:", options:["shorten them","make them clear","ignore them","translate them"], answer:1, ja:"指示を『clarify』するとは？" },
+    { q:"Teams 'collaborate' when they:", options:["compete","work together","rotate jobs","work overtime"], answer:1, ja:"チームが『collaborate』するのは？" },
+    { q:"To 'compile' data means to:", options:["delete it","compare it","collect it","share it"], answer:2, ja:"データを『compile』するとは？" },
+    { q:"To 'confirm' an order is to:", options:["cancel it","verify it","ship it","print it"], answer:1, ja:"注文を『confirm』するとは？" },
+    { q:"To 'conserve' resources is to:", options:["save them","spend them","waste them","audit them"], answer:0, ja:"資源を『conserve』するとは？" },
+    { q:"'Consistent' results are:", options:["irregular","similar over time","unexpected","declining"], answer:1, ja:"『consistent』な結果とは？" },
+    { q:"To 'decline' an invitation is to:", options:["accept","postpone","refuse","repeat"], answer:2, ja:"招待を『decline』するとは？" },
+    { q:"To 'encourage' staff is to:", options:["criticize","motivate","replace","observe"], answer:1, ja:"職員を『encourage』するとは？" },
+    { q:"To 'evaluate' a program is to:", options:["guess","measure","announce","install"], answer:1, ja:"プログラムを『evaluate』するとは？" },
+    { q:"To 'implement' a policy is to:", options:["plan it","discuss it","enforce it","oppose it"], answer:2, ja:"方針を『implement』するとは？" },
+    { q:"To 'maintain' equipment is to:", options:["ignore","repair regularly","sell","relocate"], answer:1, ja:"設備を『maintain』するとは？" },
+    { q:"To 'assume' a role is to:", options:["reject it","take it on","criticize it","limit it"], answer:1, ja:"役割を『assume』するとは？" },
+    { q:"To 'suspend' service is to:", options:["reduce cost","improve quality","pause temporarily","expand rapidly"], answer:2, ja:"サービスを『suspend』するとは？" },
+    { q:"To 'accomplish' a goal is to:", options:["begin it","delay it","achieve it","question it"], answer:2, ja:"目標を『accomplish』するとは？" }
+  ];
+
+  const READING = [{ en:"Reading passage coming soon…", ja:"準備中…" }];
+
+  const QA_IMAGES = Array.from({length:20}, (_,i)=> `${i+1}.jpg`);
+  const QA_AUDIOS = Array.from({length:20}, (_,i)=> `assets/A${i+1}.m4a`);
+
+  // --- state/els ---
+  let deck = []; let index = 0; let showingFront = true;
+  const els = {
+    welcome: document.getElementById('welcome'),
+    app: document.getElementById('app'),
+    mode: document.getElementById('mode'),
+    card: document.getElementById('card'),
+    label: document.getElementById('label'),
+    main: document.getElementById('main'),
+    sub: document.getElementById('sub'),
+    hira: document.getElementById('hira'),
+    counter: document.getElementById('counter'),
+    btnPrev: document.getElementById('btnPrev'),
+    btnNext: document.getElementById('btnNext'),
+    btnFlip: document.getElementById('btnFlip'),
+    btnShuffle: document.getElementById('btnShuffle'),
+    mcArea: document.getElementById('mcArea'),
+    pic: document.getElementById('pic'),
+    bar: document.getElementById('bar'),
+    btnPlay: document.getElementById('btnPlay'),
+    btnSpeed: document.getElementById('btnSpeed'),
+    qaAudio: document.getElementById('qaAudio'),
+  };
+
+  function shuffleArr(arr){ for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j]];} return arr; }
+
+  function showQAControls(show){
+    document.querySelectorAll('.qaOnly').forEach(el=>{ el.style.display = show ? '' : 'none'; });
+    if(show && deck.length){
+      const hasAudio = !!deck[index].audio;
+      els.btnPlay.disabled = !hasAudio;
+      els.btnSpeed.disabled = !hasAudio;
+    }
+    if(!show){ els.qaAudio.pause(); els.btnPlay.classList.remove('playing'); els.btnPlay.classList.add('paused'); }
+  }
+
+  function buildDeck(){
+    const mode = els.mode.value;
+    if(mode==='vocab-j2e' || mode==='vocab-e2j'){
+      deck = VOCAB.map(x=>({
+        type:'vocab',
+        front: mode==='vocab-j2e' ? x.ja : x.en,
+        back:  mode==='vocab-j2e' ? x.en : x.ja,
+        sideLabelFront: mode==='vocab-j2e' ? 'Japanese → English' : 'English → Japanese',
+        sideLabelBack:  mode==='vocab-j2e' ? 'English' : 'Japanese',
+      }));
+    } else if(mode==='sentences'){
+      deck = SENTENCES.map(s=>({ type:'sentence', front:s.ja, back:s.en+'\n'+s.ja, sideLabelFront:'Japanese sentence', sideLabelBack:'Answer (EN + JA)' }));
+    } else if(mode==='qa'){
+      deck = QA.map((q,i)=>({ type:'qa', front:q.q_ja||q.q_en, back:(q.a_en||'')+(q.a_ja?'\n'+q.a_ja:''), sideLabelFront:(q.q_ja?'Question (JA)':'Question (EN)'), sideLabelBack:'Answer (EN + JA)', img:QA_IMAGES[i]||null, audio:QA_AUDIOS[i]||null }));
+    } else if(mode==='quiz'){
+      deck = QUIZ.map(q=>({ type:'quiz4', front:q.q, back:(q.ja?q.ja+'\n':'')+'Answer: '+q.options[q.answer], options:q.options, answer:q.answer, sideLabelFront:'Choose the best answer', sideLabelBack:'Explanation' }));
+    } else if(mode==='reading'){
+      deck = READING.map(r=>({ type:'reading', front:r.en, back:r.en+'\n'+r.ja, sideLabelFront:'Reading (EN)', sideLabelBack:'Reading (EN + JA)' }));
+    }
+    index = 0; showingFront = true; render();
+  }
+
+  const SPEEDS = [0.5, 0.8, 1.0]; let speedIdx = 2;
+  function updateQAAudio(){
+    if(els.mode.value!=='qa' || deck.length===0) return;
+    const item = deck[index]; const src = item.audio;
+    if(!src){ els.qaAudio.removeAttribute('src'); els.btnPlay.disabled = true; els.btnSpeed.disabled = true; return; }
+    els.btnPlay.disabled = false; els.btnSpeed.disabled = false;
+    const wasPlaying = !els.qaAudio.paused && !els.qaAudio.ended;
+    const abs = (new URL(src, location.href)).href;
+    if(els.qaAudio.src !== abs){ els.qaAudio.src = src; }
+    els.qaAudio.playbackRate = SPEEDS[speedIdx];
+    if(wasPlaying){ els.qaAudio.play().catch(()=>{}); }
+  }
+  function setPlayButtonState(){ if(els.qaAudio.paused){ els.btnPlay.classList.remove('playing'); els.btnPlay.classList.add('paused'); } else { els.btnPlay.classList.remove('paused'); els.btnPlay.classList.add('playing'); } }
+
+  function render(){
+    if(deck.length===0){ els.main.textContent='—'; els.sub.textContent='No cards'; els.counter.textContent='0 / 0'; showQAControls(false); return; }
+    const item = deck[index]; const mode = els.mode.value;
+    document.getElementById('label').textContent = showingFront ? item.sideLabelFront : item.sideLabelBack;
+
+    if(item.img){ els.pic.classList.remove('hidden'); els.pic.src = item.img; els.pic.alt = item.sideLabelFront||'illustration'; els.pic.onerror = ()=>{ els.pic.classList.add('hidden'); }; }
+    else{ els.pic.classList.add('hidden'); els.pic.removeAttribute('src'); }
+
+    const content = showingFront ? item.front : item.back;
+    if((!showingFront) && (item.type==='qa'||item.type==='sentence'||item.type==='reading') && content.includes('\n')){
+      const [line1,line2] = content.split('\n');
+      els.main.innerHTML = `<div style="font-size:22px;font-weight:700" class="${item.type==='reading'?'small':''}">${line1}</div><div class="sub ${item.type==='reading'?'small':''}" style="margin-top:8px">${line2}</div>`;
+    } else {
+      els.main.innerHTML = `<div class="${item.type==='reading'?'small':''}">${content}</div>`;
+    }
+
+    if(mode==='quiz' && item.type==='quiz4' && showingFront){
+      els.sub.textContent = 'Choose the correct answer.'; els.mcArea.classList.remove('hidden'); els.mcArea.innerHTML='';
+      item.options.forEach((opt,i)=>{ const b=document.createElement('button'); b.className='optbtn'; b.textContent=opt;
+        b.addEventListener('click',(e)=>{ e.preventDefault(); e.stopPropagation(); if(i!==item.answer){ b.classList.add('bad'); b.disabled=true; return; } b.classList.add('ok'); [...els.mcArea.querySelectorAll('button')].forEach(x=>x.disabled=true); setTimeout(()=>{ showingFront=false; render(); },250); }, {passive:false});
+        els.mcArea.appendChild(b);
+      });
+    } else {
+      els.mcArea.classList.add('hidden'); els.mcArea.innerHTML='';
+      els.sub.textContent = (item.type==='quiz4'&&showingFront)?'Choose the correct answer.':'Tap / Space to flip · Swipe / ← → to navigate';
+    }
+
+    if(mode==='qa'){
+      showQAControls(true);
+      document.getElementById('btnSpeed').textContent = `${SPEEDS[speedIdx].toFixed(1)}×`;
+      updateQAAudio(); setPlayButtonState();
+    } else {
+      showQAControls(false);
+    }
+
+    els.counter.textContent = `${index+1} / ${deck.length}`;
+    const pct = ((index+1)/deck.length)*100; els.bar.style.width = `${pct}%`;
+    location.hash = `#${els.mode.value}:${index}`;
+  }
+
+  function prev(){ index=(index-1+deck.length)%deck.length; showingFront=true; render(); }
+  function next(){ index=(index+1)%deck.length; showingFront=true; render(); }
+  function flip(){ if(!(els.mode.value==='quiz' && showingFront)) { showingFront=!showingFront; render(); } }
+  function shuffleDeck(){ deck=shuffleArr(deck); index=0; showingFront=true; render(); }
+
+  function readHash(){
+    const h = location.hash.replace('#',''); if(!h){ buildDeck(); return; }
+    const [m,i] = h.split(':'); if(m && [...els.mode.options].some(o=>o.value===m)) els.mode.value = m;
+    buildDeck(); if(i && !Number.isNaN(+i)) index = Math.max(0,Math.min(deck.length-1,+i)); render();
+  }
+
+  // ---------- START APP (fixed & forced to vocab-j2e:0) ----------
+  function startApp(){
     try{
       // Force initial mode + first card
       if(els.mode) els.mode.value = 'vocab-j2e';
@@ -356,7 +361,10 @@
       buildDeck();
 
       // Show app UI
-      if(els.app) els.app.classList.remove('hidden');
+      if(els.app){
+        els.app.classList.remove('hidden');
+        els.app.removeAttribute('aria-hidden');
+      }
 
       // Hard-hide the welcome overlay (class + inline styles for safety)
       if(els.welcome){
@@ -380,14 +388,48 @@
       index = 0; buildDeck();
       location.hash = '#vocab-j2e:0';
     }
-  };
+  }
+  window.startApp = startApp;
 
-  // Ensure the button triggers start reliably
+  // ---------- Bindings ----------
   document.addEventListener('DOMContentLoaded', ()=>{
+    // Start button
     const startBtn = document.getElementById('startBtn');
-    if(startBtn){
-      startBtn.addEventListener('click', (e)=>{ e.preventDefault(); window.startApp(); });
-    }
+    if(startBtn){ startBtn.addEventListener('click', (e)=>{ e.preventDefault(); startApp(); }); }
+
+    // Controls
+    els.btnPrev.addEventListener('click', (e)=>{ e.preventDefault(); prev(); });
+    els.btnNext.addEventListener('click', (e)=>{ e.preventDefault(); next(); });
+    els.btnFlip.addEventListener('click', (e)=>{ e.preventDefault(); flip(); });
+    els.btnShuffle.addEventListener('click', (e)=>{ e.preventDefault(); shuffleDeck(); });
+    els.mode.addEventListener('change', ()=>{ buildDeck(); });
+
+    // Card interactions
+    els.card.addEventListener('click', ()=> flip());
+    document.addEventListener('keydown', (e)=>{
+      if(e.code==='Space'){ e.preventDefault(); flip(); }
+      if(e.key==='ArrowLeft'){ prev(); }
+      if(e.key==='ArrowRight'){ next(); }
+    });
+
+    // QA audio
+    els.btnPlay.addEventListener('click', ()=>{
+      if(els.qaAudio.paused){ els.qaAudio.play().catch(()=>{}); }
+      else { els.qaAudio.pause(); }
+      setPlayButtonState();
+    });
+    els.btnSpeed.addEventListener('click', ()=>{
+      speedIdx = (speedIdx+1)%SPEEDS.length;
+      els.qaAudio.playbackRate = SPEEDS[speedIdx];
+      els.btnSpeed.textContent = `${SPEEDS[speedIdx].toFixed(1)}×`;
+    });
+    els.qaAudio.addEventListener('play', setPlayButtonState);
+    els.qaAudio.addEventListener('pause', setPlayButtonState);
+    els.qaAudio.addEventListener('ended', setPlayButtonState);
+
+    // Don’t auto-build deck until the user presses Start (overlay is up)
+    // If you want to enable deep link resumes, you can call readHash() here
+    // once you detect no welcome overlay; for now we let Start control it.
   });
 </script>
 </body>
