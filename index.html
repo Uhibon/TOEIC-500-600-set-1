@@ -14,6 +14,8 @@
       background:url('Booha card.jpg') center/cover fixed no-repeat;
       overflow:hidden;
     }
+    .hidden{display:none !important;}
+
     .wrap{height:100%;max-width:900px;margin:0 auto;padding:max(10px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));display:flex;flex-direction:column;gap:10px;box-sizing:border-box}
     header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;background:rgba(255,255,255,.88);padding:12px 16px;border-radius:16px;box-shadow:0 4px 10px rgba(0,0,0,.15)}
     header h1{font-size:18px;margin:0;font-weight:800;letter-spacing:.3px;background:linear-gradient(90deg,#7dd3fc,#60a5fa,#a78bfa,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:flex;align-items:center;gap:8px}
@@ -97,6 +99,7 @@
     </div>
     <div id="label" class="label">Front</div>
 
+    <!-- Picture only appears for QA mode; never shown elsewhere -->
     <img id="pic" class="picture hidden" alt="illustration">
     <div id="main" class="main">—</div>
     <div id="sub" class="sub muted">Tap to flip · Swipe / ← →</div>
@@ -106,12 +109,11 @@
 
   <div class="footer">
     <div class="row">
-      <!-- Pills removed per request -->
       <button id="btnPrev">◀︎ Prev</button>
       <button id="btnFlip">Flip</button>
       <button id="btnNext">Next ▶︎</button>
       <button id="btnShuffle">Shuffle</button>
-      <!-- QA audio controls -->
+      <!-- Media (QA + Reading) audio controls -->
       <button id="btnPlay" class="playBtn qaOnly paused" aria-label="Play/Pause audio">Play</button>
       <button id="btnSpeed" class="speedBtn qaOnly" aria-label="Playback speed">1.0×</button>
     </div>
@@ -121,7 +123,7 @@
     </div>
   </div>
 
-  <audio id="qaAudio" preload="metadata" playsinline></audio>
+  <audio id="mediaAudio" preload="metadata" playsinline></audio>
 </div>
 
 <script>
@@ -221,9 +223,12 @@
     { en:"Regular evaluations help maintain consistent quality and conserve resources across projects.", ja:"定期的な評価は、プロジェクト全体で一貫した品質の維持と資源の節約に役立ちます。" }
   ];
 
-  // QA assets
+  // QA assets (images only for QA; audio uses A1..A20.m4a in /assets/)
   const QA_IMAGES = Array.from({length:20}, (_,i)=> `${i+1}.jpg`);
   const QA_AUDIOS = Array.from({length:20}, (_,i)=> `assets/A${i+1}.m4a`);
+
+  // Reading audio: "1/R1.m4a" ... "10/R10.m4a"
+  const READING_AUDIOS = Array.from({length:10}, (_,i)=> `${i+1}/R${i+1}.m4a`);
 
   // ---------- STATE / ELEMENTS ----------
   let deck = [];
@@ -249,7 +254,7 @@
     bar: document.getElementById('bar'),
     btnPlay: document.getElementById('btnPlay'),
     btnSpeed: document.getElementById('btnSpeed'),
-    qaAudio: document.getElementById('qaAudio'),
+    mediaAudio: document.getElementById('mediaAudio'),
   };
 
   function shuffleArr(arr){
@@ -260,21 +265,20 @@
     return arr;
   }
 
-  // Show/hide QA controls
-  function showQAControls(show){
-    const qaButtons = [els.btnPlay, els.btnSpeed];
-    qaButtons.forEach(btn=>{
+  // Show/hide audio controls (QA + Reading)
+  function showMediaControls(show){
+    const buttons = [els.btnPlay, els.btnSpeed];
+    buttons.forEach(btn=>{
       if(!btn) return;
       btn.style.display = show ? 'inline-block' : 'none';
     });
-
     if(show){
       const item = deck[index];
       const hasAudio = item && !!item.audio;
       els.btnPlay.disabled = !hasAudio;
       els.btnSpeed.disabled = !hasAudio;
     } else {
-      els.qaAudio.pause();
+      els.mediaAudio.pause();
       els.btnPlay.classList.remove('playing');
       els.btnPlay.classList.add('paused');
     }
@@ -290,6 +294,7 @@
         back:  mode==='vocab-j2e' ? x.en : x.ja,
         sideLabelFront: mode==='vocab-j2e' ? 'Japanese → English' : 'English → Japanese',
         sideLabelBack:  mode==='vocab-j2e' ? 'English' : 'Japanese',
+        img:null, audio:null
       }));
     } else if(mode==='sentences'){
       deck = SENTENCES.map(s=>({
@@ -297,7 +302,8 @@
         front:s.ja,
         back:s.en+'\n'+s.ja,
         sideLabelFront:'Japanese sentence',
-        sideLabelBack:'Answer (EN + JA)'
+        sideLabelBack:'Answer (EN + JA)',
+        img:null, audio:null
       }));
     } else if(mode==='qa'){
       deck = QA.map((q,i)=>({
@@ -317,45 +323,50 @@
         options:q.options,
         answer:q.answer,
         sideLabelFront:'Choose the best answer',
-        sideLabelBack:'Explanation'
+        sideLabelBack:'Explanation',
+        img:null, audio:null
       }));
     } else if(mode==='reading'){
-      deck = READING.map(r=>({
+      deck = READING.map((r,i)=>({
         type:'reading',
         front:r.en,
         back:r.en+'\n'+r.ja,
         sideLabelFront:'Reading (EN)',
-        sideLabelBack:'Reading (EN + JA)'
+        sideLabelBack:'Reading (EN + JA)',
+        img:null,
+        audio: READING_AUDIOS[i] || null
       }));
     }
     index = 0; showingFront = true; render();
   }
 
-  // ---------- QA AUDIO ----------
+  // ---------- MEDIA AUDIO (QA + READING) ----------
   const SPEEDS = [0.5, 0.8, 1.0];
   let speedIdx = 2; // default 1.0×
 
-  function updateQAAudio(){
-    if(els.mode.value!=='qa' || deck.length===0) return;
+  function updateMediaAudio(){
+    const mode = els.mode.value;
+    if((mode!=='qa' && mode!=='reading') || deck.length===0) return;
+
     const item = deck[index]; const src = item.audio;
     if(!src){
-      els.qaAudio.removeAttribute('src');
+      els.mediaAudio.removeAttribute('src');
       els.btnPlay.disabled = true; els.btnSpeed.disabled = true;
       return;
     }
     els.btnPlay.disabled = false; els.btnSpeed.disabled = false;
 
-    const wasPlaying = !els.qaAudio.paused && !els.qaAudio.ended;
+    const wasPlaying = !els.mediaAudio.paused && !els.mediaAudio.ended;
     const abs = (new URL(src, location.href)).href;
-    if(els.qaAudio.src !== abs){ els.qaAudio.src = src; }
-    els.qaAudio.playbackRate = SPEEDS[speedIdx];
+    if(els.mediaAudio.src !== abs){ els.mediaAudio.src = src; }
+    els.mediaAudio.playbackRate = SPEEDS[speedIdx];
     if(wasPlaying){
-      els.qaAudio.play().catch(()=>{ /* autoplay blocked */ });
+      els.mediaAudio.play().catch(()=>{ /* autoplay blocked */ });
     }
   }
 
   function setPlayButtonState(){
-    if(els.qaAudio.paused){
+    if(els.mediaAudio.paused){
       els.btnPlay.classList.remove('playing'); els.btnPlay.classList.add('paused');
     }else{
       els.btnPlay.classList.remove('paused'); els.btnPlay.classList.add('playing');
@@ -366,19 +377,20 @@
   function render(){
     if(deck.length===0){
       els.main.textContent='—'; els.sub.textContent='No cards'; els.counter.textContent='0 / 0';
-      showQAControls(false); return;
+      showMediaControls(false); return;
     }
     const item = deck[index]; const mode = els.mode.value;
     els.label.textContent = showingFront ? item.sideLabelFront : item.sideLabelBack;
 
-    // Image for QA (show on both sides)
-    if(item.img){
+    // Image only for QA mode (remove placeholders elsewhere)
+    if(mode==='qa' && item.img){
       els.pic.classList.remove('hidden');
       els.pic.src = item.img;
       els.pic.alt = item.sideLabelFront || 'illustration';
       els.pic.onerror = ()=>{ els.pic.classList.add('hidden'); };
     } else {
-      els.pic.classList.add('hidden'); els.pic.removeAttribute('src');
+      els.pic.classList.add('hidden');
+      els.pic.removeAttribute('src');
     }
 
     const content = showingFront ? item.front : item.back;
@@ -408,14 +420,14 @@
       els.sub.textContent = (item.type==='quiz4'&&showingFront)?'Choose the correct answer.':'Tap to flip · Swipe / ← →';
     }
 
-    // QA controls toggle + audio refresh
-    if(mode==='qa'){
-      showQAControls(true);
+    // Media controls (QA + Reading)
+    if(mode==='qa' || mode==='reading'){
+      showMediaControls(true);
       els.btnSpeed.textContent = `${SPEEDS[speedIdx].toFixed(1)}×`;
-      updateQAAudio();
+      updateMediaAudio();
       setPlayButtonState();
     } else {
-      showQAControls(false);
+      showMediaControls(false);
     }
 
     // Counter / progress
@@ -435,7 +447,6 @@
   // ---------- STARTUP ----------
   function startApp(){
     try{
-      // Default to Vocab JP→EN unless URL hash explicitly requests another mode
       const h = location.hash.replace('#','');
       const askMode = h && h.split(':')[0];
       const defaultMode = 'vocab-j2e';
@@ -444,23 +455,17 @@
       index = 0; showingFront = true;
       buildDeck();
 
-      // Show UI
       els.app.classList.remove('hidden');
       els.app.removeAttribute('aria-hidden');
 
-      // Hide welcome overlay
       els.welcome.classList.add('hidden');
       els.welcome.setAttribute('aria-hidden','true');
-      els.welcome.style.display = 'none';
-      els.welcome.style.visibility = 'hidden';
-      els.welcome.style.pointerEvents = 'none';
 
-      // Lock URL to current mode/index
       location.hash = `#${els.mode.value}:0`;
     }catch(err){
       console.error('startApp error:', err);
       els.app.classList.remove('hidden');
-      els.welcome.classList.add('hidden'); els.welcome.style.display='none';
+      els.welcome.classList.add('hidden');
       if(els.mode) els.mode.value = 'vocab-j2e';
       index = 0; buildDeck(); location.hash = '#vocab-j2e:0';
     }
@@ -469,7 +474,7 @@
 
   // ---------- BINDINGS ----------
   document.addEventListener('DOMContentLoaded', ()=>{
-    // Start button only (no auto-start)
+    // Start button
     const startBtn = document.getElementById('startBtn');
     if(startBtn){ startBtn.addEventListener('click', (e)=>{ e.preventDefault(); startApp(); }); }
 
@@ -483,30 +488,28 @@
     // Card interactions (tap/click to flip)
     els.card.addEventListener('click', ()=> flip());
 
-    // Keyboard: keep ← → navigation; remove Space-to-flip per request
+    // Keyboard: keep ← → navigation; no Space flip
     document.addEventListener('keydown', (e)=>{
       if(e.key==='ArrowLeft'){ prev(); }
       if(e.key==='ArrowRight'){ next(); }
     });
 
-    // QA audio controls
+    // Media audio controls (QA + Reading)
     els.btnPlay.addEventListener('click', ()=>{
-      if(els.qaAudio.paused){
-        els.qaAudio.play().catch(()=>{ /* autoplay blocked */ });
+      if(els.mediaAudio.paused){
+        els.mediaAudio.play().catch(()=>{ /* autoplay blocked */ });
       } else {
-        els.qaAudio.pause();
+        els.mediaAudio.pause();
       }
       setPlayButtonState();
     });
     els.btnSpeed.addEventListener('click', ()=>{
-      const SPEEDS = [0.5, 0.8, 1.0];
-      speedIdx = (speedIdx+1)%SPEEDS.length;
-      els.qaAudio.playbackRate = SPEEDS[speedIdx];
-      els.btnSpeed.textContent = `${SPEEDS[speedIdx].toFixed(1)}×`;
+      const SPEEDS_LOCAL = [0.5, 0.8, 1.0];
+      speedIdx = (speedIdx+1)%SPEEDS_LOCAL.length;
+      els.mediaAudio.playbackRate = SPEEDS_LOCAL[speedIdx];
+      els.btnSpeed.textContent = `${SPEEDS_LOCAL[speedIdx].toFixed(1)}×`;
     });
-    els.qaAudio.addEventListener('play', setPlayButtonState);
-    els.qaAudio.addEventListener('pause', setPlayButtonState);
-    els.qaAudio.addEventListener('ended', setPlayButtonState);
+    ['play','pause','ended'].forEach(ev=> els.mediaAudio.addEventListener(ev, setPlayButtonState));
   });
 </script>
 </body>
