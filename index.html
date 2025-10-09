@@ -260,18 +260,23 @@
   }
 
   function showQAControls(show){
-    document.querySelectorAll('.qaOnly').forEach(el=>{ el.style.display = show ? '' : 'none'; });
-    if(show && deck.length){
-      const hasAudio = !!deck[index].audio;
-      els.btnPlay.disabled = !hasAudio;
-      els.btnSpeed.disabled = !hasAudio;
-    }
-    if(!show){
-      els.qaAudio.pause();
-      els.btnPlay.classList.remove('playing');
-      els.btnPlay.classList.add('paused');
-    }
+  const qaButtons = [els.btnPlay, els.btnSpeed];
+  qaButtons.forEach(btn=>{
+    if(!btn) return;
+    btn.style.display = show ? 'inline-block' : 'none';
+  });
+
+  if(show){
+    const item = deck[index];
+    const hasAudio = item && !!item.audio;
+    els.btnPlay.disabled = !hasAudio;
+    els.btnSpeed.disabled = !hasAudio;
+  } else {
+    els.qaAudio.pause();
+    els.btnPlay.classList.remove('playing');
+    els.btnPlay.classList.add('paused');
   }
+}
 
   function buildDeck(){
     const mode = els.mode.value;
@@ -324,7 +329,13 @@
   }
 
   // --- QA audio wiring ---
-  const SPEEDS = [0.5, 0.8, 1.0]; let speedIdx = 2;
+  const SPEEDS = [0.5, 0.8, 1.0];
+els.btnSpeed.addEventListener('click', ()=>{
+  speedIdx = (speedIdx+1)%SPEEDS.length;
+  els.qaAudio.playbackRate = SPEEDS[speedIdx];
+  els.btnSpeed.textContent = `${SPEEDS[speedIdx].toFixed(1)}×`;
+});
+
 
   function updateQAAudio(){
     if(els.mode.value!=='qa' || deck.length===0) return;
@@ -491,6 +502,9 @@
     });
 
     // QA audio
+    // Audio path mapping (already correct for your folder)
+const QA_IMAGES = Array.from({length:20}, (_,i)=> `${i+1}.jpg`);
+const QA_AUDIOS = Array.from({length:20}, (_,i)=> `assets/A${i+1}.m4a`);
     els.btnPlay.addEventListener('click', ()=>{
       if(els.qaAudio.paused){
         els.qaAudio.play().catch(()=>{ /* autoplay blocked: user can press again */ });
